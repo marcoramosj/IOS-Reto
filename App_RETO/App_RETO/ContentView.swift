@@ -19,7 +19,7 @@ struct ContentView: View {
             AdminView()
                 .tabItem {
                     Image(systemName: "gearshape.fill")
-                    Text("Admin")
+                    Text("Administrador")
                 }
         }
     }
