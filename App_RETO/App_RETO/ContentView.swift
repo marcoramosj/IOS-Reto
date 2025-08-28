@@ -9,15 +9,19 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
+        TabView {
+            DashboardAdminView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Panel")
+                }
             
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, Perros!")
-                .........
+            AdminView()
+                .tabItem {
+                    Image(systemName: "gearshape.fill")
+                    Text("Administrador")
+                }
         }
-        .padding()
     }
 }
 
