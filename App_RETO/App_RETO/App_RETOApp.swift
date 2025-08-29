@@ -11,7 +11,7 @@ import SwiftUI
 struct App_RETOApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            InicioSesion()
         }
     }
 }
