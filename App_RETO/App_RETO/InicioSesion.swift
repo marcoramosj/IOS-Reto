@@ -30,10 +30,12 @@ struct InicioSesion: View {
                 
                 TextField("Usuario", text: $usuario)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .textInputAutocapitalization(.never)
                     .padding()
                 
                 SecureField("Contraseña", text: $contrasena)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .textInputAutocapitalization(.never)
                     .padding(.horizontal)
                 
                 Button("Iniciar Sesión") {
