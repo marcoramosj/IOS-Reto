@@ -1,8 +1,8 @@
 //
-//  Tabs.swift
-//  
+//  tabs.swift
+//  myreto_dashboard
 //
-//  Created by 박진혁 on 8/28/25.
+//  Created by 박진혁 on 8/27/25.
 //
 
 import SwiftUI
@@ -40,3 +40,4 @@ struct AddItemSheet: View { var body: some View {
         Button("Close") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to:nil, from:nil, for:nil) }
     }.padding()
 }}
+

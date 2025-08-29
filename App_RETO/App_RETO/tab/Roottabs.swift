@@ -1,8 +1,8 @@
 //
-//  Roottabs.swift
-//  
+//  RootTabs.swift
+//  myreto_dashboard
 //
-//  Created by 박진혁 on 8/28/25.
+//  Created by 박진혁 on 8/27/25.
 //
 
 import SwiftUI
@@ -45,3 +45,4 @@ struct RootTabs: View {
         }
     }
 }
+
