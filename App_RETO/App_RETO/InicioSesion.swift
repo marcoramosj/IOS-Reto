@@ -15,7 +15,7 @@ struct InicioSesion: View {
     @State private var loggedIn = false
     
     // Credenciales fijas
-    private let validUser = "Olivervazquezz"
+    private let validUser = "marcoramos"
     private let validPass = "1234"
     
     var body: some View {
