@@ -56,22 +56,30 @@ struct InterfazVent: View {
                 tags+=1
             }).buttonStyle(.borderedProminent)
             .frame(maxWidth: .infinity, alignment: .center)
+            .tint (Color(red: 1/255, green:104/255, blue: 138/255))
+            .scaleEffect(1.5)
             Spacer()
             HStack{
                 Button("Salir", action:{
                     dismiss()
                 }).buttonStyle(.borderedProminent)
+                    .tint (Color(red: 1/255, green:104/255, blue: 138/255))
+                    .padding(20)
+                    .scaleEffect(1.5)
                 Spacer()
                 Button("Siguiente",action:{
                     basedeDatos[tags][3] = "Entregado"
                     print("\(basedeDatos[tags][0]) esta \(basedeDatos[tags][3]) ")
                     tags+=1
                     
-                }).buttonStyle(.borderedProminent)
+                })
+                .buttonStyle(.borderedProminent)
+                    .tint (Color(red: 1/255, green:104/255, blue: 138/255))
+                    .scaleEffect(1.5)
                
             }
     
-        }.padding()
+        }.padding(30)
         .background(Color.gray)
         .navigationBarBackButtonHidden(true)
     }
