@@ -58,7 +58,7 @@ struct InicioSesion: View {
                 Alert(title: Text("Error"), message: Text("Usuario o contraseña incorrectos."), dismissButton: .default(Text("OK")))
             }
             .navigationDestination(isPresented: $loggedIn) {
-                ContentView()
+                BarraInferior()
             }
         }
     }
