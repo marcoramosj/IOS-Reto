@@ -20,14 +20,14 @@ struct InicioSesion: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
-                VStack(spacing: 8) {
+            VStack(spacing: 10) {
+                VStack {
                     Image("LogoTurnoMed")
                         .resizable(resizingMode: .stretch)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 215.0)
                 }
-                                                
+                
                 TextField("Usuario", text: $usuario)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding()
@@ -44,8 +44,12 @@ struct InicioSesion: View {
                     }
                 }
                 .bold()
-                .buttonStyle(.borderedProminent)
+                .padding(15)
+                .background(Color(red: 0.012, green: 0.562, blue: 0.734))
+                .foregroundColor(.white)
+                .cornerRadius(12)
                 .padding(.top)
+                
             }
             .padding()
             .alert(isPresented: $showAlert) {
