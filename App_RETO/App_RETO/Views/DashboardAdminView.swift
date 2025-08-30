@@ -18,7 +18,6 @@ struct DashboardAdminView: View {
                     OpcionRapida(titulo: "Medicamentos totales", subtitulo: "8", icono: "pills.fill", color: Color.purple, mostrarFlecha: true)
                 }
                 Spacer()
-                BarraInferior()
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -26,7 +25,6 @@ struct DashboardAdminView: View {
         }
     }
 }
-
 
 struct Encabezado: View {
     var saludo: String
@@ -76,7 +74,7 @@ struct TarjetaProximaCita: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 18).stroke(Color(.systemGray4), lineWidth: 1)
                 )
-                .shadow(color: .black.opacity(0.05), radius: 8, y: 4)
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     HStack(spacing: 8) {
@@ -145,42 +143,39 @@ struct OpcionRapida: View {
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(Color.white)
-                .shadow(color: .black.opacity(0.05), radius: 8, y: 4)
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
         )
     }
 }
 
 struct BarraInferior: View {
     var body: some View {
-        HStack {
-            ElementoInferior(icono: "square.grid.2x2.fill", activo: true)
-            Spacer()
-            ElementoInferior(icono: "calendar")
-            Spacer()
-            ElementoInferior(icono: "bell")
-            Spacer()
-            ElementoInferior(icono: "gearshape")
+        TabView {
+            NavigationStack { DashboardAdminView() }
+                .tabItem {
+                    Image(systemName: "square.grid.2x2.fill")
+                    Text("Inicio")
+                }
+
+            NavigationStack { AgendarTurnoView() }
+                .tabItem {
+                    Image(systemName: "calendar.badge.plus")
+                    Text("Agendar")
+                }
+
+            NavigationStack { VerTurnoView() }
+                .tabItem {
+                    Image(systemName: "list.bullet.rectangle")
+                    Text("Turnos")
+                }
+
+            NavigationStack { AdminView() }
+                .tabItem {
+                    Image(systemName: "gearshape")
+                    Text("Admin")
+                }
         }
-        .padding(.horizontal, 26)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(Color.white)
-                .shadow(color: .black.opacity(0.06), radius: 10, y: 4)
-        )
     }
 }
 
-struct ElementoInferior: View {
-    var icono: String
-    var activo: Bool = false
-    var body: some View {
-        Image(systemName: icono)
-            .font(.system(size: 18, weight: .semibold))
-            .foregroundColor(activo ? .accentColor : .secondary)
-    }
-}
-
-#Preview {
-    DashboardAdminView()
-}
+#Preview { BarraInferior() }

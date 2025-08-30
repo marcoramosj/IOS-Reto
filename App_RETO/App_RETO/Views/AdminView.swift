@@ -31,7 +31,6 @@ struct AdminView: View {
                         .shadow(radius: 6, y: 3)
                 }
                 .padding(.horizontal, 20)
-                BarraInferior()
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
