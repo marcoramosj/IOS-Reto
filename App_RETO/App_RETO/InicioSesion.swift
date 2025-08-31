@@ -8,62 +8,55 @@
 import SwiftUI
 
 struct InicioSesion: View {
-    
-    @State private var usuario = ""
+    @Binding var usuario: String
+    @Binding var loggedIn: Bool
     @State private var contrasena = ""
-    @State private var showAlert = false
-    @State private var loggedIn = false
-    
-    // Credenciales fijas
+    @State private var mostrarError = false
+
     private let validUser = "marcoramos"
     private let validPass = "1234"
-    
+
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 10) {
-                VStack {
-                    Image("LogoTurnoMed")
-                        .resizable(resizingMode: .stretch)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 215.0)
-                }
-                
+        VStack(spacing: 20) {
+            Image("LogoTurnoMed")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 220)
+
+            VStack(spacing: 12) {
                 TextField("Usuario", text: $usuario)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
+                    .padding()
+                    .background(.thinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+
+                SecureField("Contraseña", text: $contrasena)
                     .textInputAutocapitalization(.never)
                     .padding()
-                
-                SecureField("Contraseña", text: $contrasena)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .textInputAutocapitalization(.never)
-                    .padding(.horizontal)
-                
-                Button("Iniciar Sesión") {
-                    if usuario == validUser && contrasena == validPass {
-                        loggedIn = true
-                    } else {
-                        showAlert = true
-                    }
+                    .background(.thinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+
+            Button("Iniciar sesión") {
+                if usuario == validUser && contrasena == validPass {
+                    loggedIn = true
+                } else {
+                    mostrarError = true
                 }
-                .bold()
-                .padding(15)
-                .background(Color(red: 0.012, green: 0.562, blue: 0.734))
-                .foregroundColor(.white)
-                .cornerRadius(12)
-                .padding(.top)
-                
             }
-            .padding()
-            .alert(isPresented: $showAlert) {
-                Alert(title: Text("Error"), message: Text("Usuario o contraseña incorrectos."), dismissButton: .default(Text("OK")))
-            }
-            .navigationDestination(isPresented: $loggedIn) {
-                ContentView()
-            }
+            .font(.title3)
+            .controlSize(.large)
+            .buttonStyle(.borderedProminent)
+
+            Spacer()
+        }
+        .padding()
+        .font(.title3)
+        .alert("Credenciales inválidas", isPresented: $mostrarError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Verifica tu usuario y contraseña")
         }
     }
-}
-
-#Preview {
-    InicioSesion()
 }

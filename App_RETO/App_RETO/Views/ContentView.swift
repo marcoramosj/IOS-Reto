@@ -8,23 +8,30 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var usuario = ""
+    @State private var loggedIn = false
+
     var body: some View {
-        TabView {
-            DashboardAdminView()
-                .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Panel")
+        Group {
+            if loggedIn {
+                NavigationStack {
+                    TabView {
+                        DashboardAdminView(usuario: usuario)
+                            .tabItem { Label("Inicio", systemImage: "house.fill") }
+
+                        AgendarTurnoView()
+                            .tabItem { Label("Agendar", systemImage: "calendar.badge.plus") }
+
+                        VerTurnoView()
+                            .tabItem { Label("Mis turnos", systemImage: "list.bullet.rectangle") }
+
+                        AdminView()
+                            .tabItem { Label("Perfil", systemImage: "person.crop.circle") }
+                    }
                 }
-            
-            AdminView()
-                .tabItem {
-                    Image(systemName: "gearshape.fill")
-                    Text("Administrador")
-                }
+            } else {
+                InicioSesion(usuario: $usuario, loggedIn: $loggedIn)
+            }
         }
     }
-}
-
-#Preview {
-    ContentView()
 }

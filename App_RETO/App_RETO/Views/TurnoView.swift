@@ -8,54 +8,22 @@
 import SwiftUI
 
 struct TurnoView: View {
-    
-    // Variables
-    @State public var title: String = ""
-    @State public var subtitle: String = ""
-    
+    var paciente: String
+    var fecha: Date
+
     var body: some View {
-        VStack{
-            ZStack {
-                Text(title)
-                    .font(.title2)
-                    .fontWeight(.semibold)
-
-                HStack {
-                    Spacer()
-                    ProfileImage()
-                        .frame(width: 65)
-                        .padding(.trailing)
-                }
+        HStack(spacing: 12) {
+            Image(systemName: "calendar.circle.fill")
+                .font(.largeTitle)
+            VStack(alignment: .leading) {
+                Text(paciente).font(.headline)
+                Text(fecha.formatted(date: .abbreviated, time: .shortened))
             }
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .ignoresSafeArea(edges: .top)
-            .padding(.top, 5)
-           
-            ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(.ultraThickMaterial)   // blur effect
-                    .frame(height: 730)
-                    .ignoresSafeArea()
-                
-                VStack {
-                    ProfileImage()
-                        .frame(width: 120.0)
-                        .padding(.bottom, 10)
-                    Text(subtitle)
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .multilineTextAlignment(.center)
-                }
-                    .padding(.bottom, 500)
-                    
-                                    
-            }
+            Spacer()
         }
-        .ignoresSafeArea(edges: .bottom)
+        .padding(12)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
-}
-
-#Preview {
-    TurnoView()
 }
 
