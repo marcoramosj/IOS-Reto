@@ -10,58 +10,67 @@ import SwiftUI
 struct DashboardUserView: View {
     let usuario: String
     @Binding var loggedIn: Bool
+    @State private var alerta: Bool = false
 
     var body: some View {
-        ZStack {
-            Color(.systemGray6).ignoresSafeArea()
-            
-            VStack(spacing: 20) {
-                EncabezadoUser(usuario: usuario)
+        NavigationStack{
+            ZStack {
+                Color(.systemGray6).ignoresSafeArea()
                 
-                VStack(spacing: 12) {
-                    Text("Tu turno:")
-                        .font(.largeTitle)
-                        .fontWeight(.heavy)
-
-                    Text("02")
-                        .font(.largeTitle)
-                        .fontWeight(.heavy)
-                        .monospacedDigit()
-
-                    Text("Falta 1 turno para llegar al tuyo")
-                        .font(.headline)
-                        .fontWeight(.bold)
-
-                    Text("Ventanilla asignada: 3")
-                        .fontWeight(.bold)
-                        .padding(.top, 8)
-                }
-                .padding(24)
-                .frame(maxWidth: .infinity)
-                .background(RoundedRectangle(cornerRadius: 18).fill(Color.white))
-                .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color(.systemGray4)))
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
-                .padding(.horizontal, 20)
-                
-                // Botones de prueba
-                VStack(spacing: 12) {
-                    Button("Pedir turno") {
+                VStack(spacing: 20) {
+                    EncabezadoUser(usuario: usuario)
+                    
+                    VStack(spacing: 12) {
+                        Text("Tu turno:")
+                            .font(.largeTitle)
+                            .fontWeight(.heavy)
+                            .foregroundStyle(.white)
+                        
+                        Text("02")
+                            .font(.largeTitle)
+                            .fontWeight(.heavy)
+                            .monospacedDigit()
+                            .foregroundStyle(.white)
+                        
+                        Text("Falta 1 turno para llegar al tuyo")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                        
+                        Text("Ventanilla asignada: 3")
+                            .fontWeight(.bold)
+                            .padding(.top, 8)
+                            .foregroundStyle(.white)
+                        
+                        BotonPrincipal(title:"Cancelar turno"){
+                            alerta=true
+                        }.alert(isPresented: $alerta) {
+                            Alert(
+                                title: Text("Seguro?"),
+                                message: Text("¿Quieres cancelar tu turno?"),
+                                primaryButton: .default(Text("Continuar")) {
+                                    print("Turno Cancelado")
+                                },
+                                secondaryButton: .cancel()
+                            )
+                        }
+                            .tint(Color.Buttoncolor)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-
-                    Button("Cancelar turno") {
+                    .padding(24)
+                    .frame(maxWidth: .infinity)
+                    .background(RoundedRectangle(cornerRadius: 18).fill(Color.pantallasColor))
+                    .padding(.horizontal, 20)
+                    
+                    VStack(alignment:.leading, spacing: 12) {
+                        BotonPantallas(title: "Pedir turno", pantalla: TurnoView(), color: .Buttoncolor)
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-                    .tint(.red)
+                    .padding(.horizontal, 20)
+                    
+                    Spacer()
                 }
-                .padding(.horizontal, 20)
-
-                Spacer()
             }
+            .navigationBarHidden(true)
         }
-        .navigationBarHidden(true)
     }
 }
 

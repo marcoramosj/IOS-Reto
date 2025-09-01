@@ -23,7 +23,7 @@ struct AgendarTurnoView: View {
     var body: some View {
         NavigationStack {
             ZStack (alignment: .leading) {
-                TurnoView(title: "Agenda tu turno", subtitle: "Ej. Nombre")
+                
                 
                 // Create elements
                 VStack (alignment: .center){

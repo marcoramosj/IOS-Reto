@@ -14,7 +14,7 @@ struct VerTurnoView: View {
     var body: some View {
         NavigationStack {
             ZStack (alignment: .leading){
-                TurnoView(title: "Turno Actual", subtitle: "No. Turno")
+                TurnoView()
                 NavigationLink("Volver"){
                     // Append here
                 }
