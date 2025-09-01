@@ -10,6 +10,7 @@ import SwiftUI
 struct VerTurnoView: View {
     @EnvironmentObject var appState: AppState
     var body: some View {
+<<<<<<< Updated upstream
         List {
             ForEach(appState.citas) { cita in
                 HStack(spacing: 12) {
@@ -19,6 +20,12 @@ struct VerTurnoView: View {
                         Text(cita.fecha.formatted(date: .abbreviated, time: .shortened)).foregroundStyle(.secondary)
                     }
                     Spacer()
+=======
+        NavigationStack {
+            ZStack (alignment: .leading){
+                NavigationLink("Volver"){
+                    // Append here
+>>>>>>> Stashed changes
                 }
                 .padding(12)
                 .background(Color.appCard)

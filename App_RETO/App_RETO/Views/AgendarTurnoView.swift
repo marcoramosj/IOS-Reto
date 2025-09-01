@@ -19,6 +19,7 @@ struct AgendarTurnoView: View {
     private let especialidades = ["Médico General", "Pediatría", "Dermatología", "Odontología"]
 
     var body: some View {
+<<<<<<< Updated upstream
         GeometryReader { proxy in
             let minH = proxy.size.height * 0.9
             ScrollView {
@@ -112,6 +113,33 @@ struct AgendarTurnoView: View {
                                     confirmado = true
                                 }
                             }
+=======
+        NavigationStack {
+            ZStack (alignment: .leading) {
+                
+                // Create elements
+                VStack (alignment: .center){
+                    
+                    VStack (alignment: .leading){
+                        Text("Escoge tu horario de atención")
+                            .font(.title3)
+                            .padding(.bottom, 15)
+                        
+                        DatePicker("Escoge tu tiempo y hora", selection: $fechaYhora, displayedComponents: [.date, .hourAndMinute])
+                            .datePickerStyle(.compact) // options: .compact, .wheel, .graphical
+                            .labelsHidden()
+                            .padding(.leading, 5)
+                            .padding(.bottom, 15)
+                        
+                        Text("Número de receta")
+                            .padding(.bottom, 5)
+                        TextField("Enter text here", text: $noReceta)
+                            .padding(.leading, 5)
+                            .padding(.bottom, 15)
+                        
+                        HStack{
+                            
+>>>>>>> Stashed changes
                         }
                         .padding(.vertical, 24)
                         .padding(.horizontal, 16)
