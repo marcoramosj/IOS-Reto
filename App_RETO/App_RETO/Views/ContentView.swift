@@ -15,32 +15,27 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             Color.appBackground.ignoresSafeArea()
-            Group {
-                if loggedIn {
-                    NavigationStack {
-                        TabView(selection: $appState.selectedTab) {
-                            DashboardAdminView(usuario: usuario)
-                                .tabItem { Label("Inicio", systemImage: "house.fill") }
-                                .tag(0)
-
-                            AgendarTurnoView(paciente: usuario)
-                                .tabItem { Label("Agendar", systemImage: "calendar.badge.plus") }
-                                .tag(1)
-
-                            VerTurnoView()
-                                .tabItem { Label("Mis turnos", systemImage: "list.bullet.rectangle") }
-                                .tag(2)
-
-                            AdminView()
-                                .tabItem { Label("Perfil", systemImage: "person.crop.circle") }
-                                .tag(3)
-                        }
-                        .tabBarColors(selected: .appPrimary,   // AZUL cuando está seleccionada
-                                      unselected: .appAccent)  // NARANJA por defecto
+            if loggedIn {
+                NavigationStack {
+                    TabView(selection: $appState.selectedTab) {
+                        DashboardAdminView(usuario: usuario)
+                            .tabItem { Label("Inicio", systemImage: "square.grid.2x2.fill") }
+                            .tag(0)
+                        AgendarTurnoView(paciente: usuario)
+                            .tabItem { Label("Agendar", systemImage: "calendar.badge.plus") }
+                            .tag(1)
+                        VerTurnoView()
+                            .tabItem { Label("Turnos", systemImage: "list.bullet.rectangle") }
+                            .tag(2)
+                        AdminView()
+                            .tabItem { Label("Perfil", systemImage: "person.crop.circle") }
+                            .tag(3)
                     }
-                } else {
-                    InicioSesion(usuario: $usuario, loggedIn: $loggedIn)
+                    .tabBarColors(selected: .appPrimary, unselected: .appAccent)
+                    .tint(.appPrimary)
                 }
+            } else {
+                InicioSesion(usuario: $usuario, loggedIn: $loggedIn)
             }
         }
     }

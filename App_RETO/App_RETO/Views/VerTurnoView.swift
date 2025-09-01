@@ -9,20 +9,25 @@ import SwiftUI
 
 struct VerTurnoView: View {
     @EnvironmentObject var appState: AppState
-
     var body: some View {
         List {
             ForEach(appState.citas) { cita in
-                TurnoView(paciente: cita.paciente, fecha: cita.fecha)
+                HStack(spacing: 12) {
+                    Image(systemName: "calendar.circle.fill").font(.largeTitle).foregroundStyle(Color.appPrimary)
+                    VStack(alignment: .leading) {
+                        Text(cita.paciente).font(.headline)
+                        Text(cita.fecha.formatted(date: .abbreviated, time: .shortened)).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(12)
+                .background(Color.appCard)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
             }
-            .onDelete { indexSet in
-                appState.citas.remove(atOffsets: indexSet)
-            }
+            .onDelete { appState.citas.remove(atOffsets: $0) }
         }
         .scrollContentBackground(.hidden)
         .background(Color.appBackground)
         .navigationTitle("Mis turnos")
-        .primaryText()
-        .toolbar { EditButton() }
     }
 }

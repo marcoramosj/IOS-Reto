@@ -27,26 +27,33 @@ struct InicioSesion: View {
                     .padding(.top, 60)
 
                 VStack(spacing: 16) {
-                    AppTextField(placeholder: "Usuario", text: $usuario)
-                    AppSecureField(placeholder: "Contraseña", text: $contrasena)
+                    TextField("Usuario", text: $usuario)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
+                        .padding()
+                        .background(Color.appCard)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.corner))
+                        .font(.title3)
+
+                    SecureField("Contraseña", text: $contrasena)
+                        .textInputAutocapitalization(.never)
+                        .padding()
+                        .background(Color.appCard)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.corner))
+                        .font(.title3)
                 }
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 28)
 
                 AppButton(title: "Iniciar sesión") {
-                    if usuario == validUser && contrasena == validPass {
-                        loggedIn = true
-                    } else {
-                        mostrarError = true
-                    }
+                    if usuario == validUser && contrasena == validPass { loggedIn = true } else { mostrarError = true }
                 }
-                .padding(.horizontal, 32)
-                .padding(.top, 12)
+                .padding(.horizontal, 28)
 
                 Spacer()
             }
         }
         .alert("Credenciales inválidas", isPresented: $mostrarError) {
-            Button("OK", role: .cancel) { }
+            Button("OK", role: .cancel) {}
         } message: {
             Text("Verifica tu usuario y contraseña")
         }

@@ -6,177 +6,85 @@
 //
 
 import SwiftUI
+import UIKit
 import Foundation
 
 struct AppTheme {
-    static let corner: CGFloat = 16
+    static let corner: CGFloat = 18
     static let padding: CGFloat = 16
     static let spacing: CGFloat = 12
-    static let bigSpacing: CGFloat = 16
 }
 
 extension Color {
-    static var appPrimary: Color {
-        if let ui = UIColor(named: "AppPrimary") { return Color(ui) }
-        return Color.blue
-    }
-    static var appAccent: Color {
-        if let ui = UIColor(named: "AppAccent") { return Color(ui) }
-        return Color.orange
-    }
-    static var appSecondary: Color {
-        if let ui = UIColor(named: "AppSecondary") { return Color(ui) }
-        return Color.gray
-    }
-    static var appBackground: Color {
-        if let ui = UIColor(named: "AppBackground") { return Color(ui) }
-        return Color(UIColor.systemBackground)
-    }
-    static var appCard: Color {
-        if let ui = UIColor(named: "AppCard") { return Color(ui) }
-        return Color(UIColor.secondarySystemBackground)
-    }
+    static var appPrimary: Color { Color(UIColor(named: "AppPrimary") ?? .systemBlue) }
+    static var appAccent: Color { Color(UIColor(named: "AppAccent") ?? .systemOrange) }
+    static var appBackground: Color { Color(UIColor(named: "AppBackground") ?? .systemBackground) }
+    static var appCard: Color { Color(UIColor(named: "AppCard") ?? .secondarySystemBackground) }
+    static var appPanel: Color { Color(UIColor(named: "AppPanel") ?? UIColor(red: 0.19, green: 0.24, blue: 0.28, alpha: 1)) }
 }
 
-extension View {
-    func cardStyle() -> some View {
-        self.padding(AppTheme.padding)
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.corner))
-    }
-    func primaryText() -> some View { self.font(.title3) }
-    func largeControl() -> some View { self.controlSize(.large) }
-    func primaryFill() -> some View { self.tint(.appPrimary) }
-}
-
-/* ----------------- Botones compatibles ----------------- */
-struct AppFilledButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .foregroundStyle(Color.white)
-            .padding(.vertical, 12).padding(.horizontal, 16)
-            .frame(maxWidth: .infinity)
-            .background(Color.appAccent.opacity(configuration.isPressed ? 0.85 : 1.0))
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.corner))
-            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
-    }
-}
-struct AppOutlineButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .foregroundStyle(Color.appPrimary)
-            .padding(.vertical, 12).padding(.horizontal, 16)
-            .frame(maxWidth: .infinity)
-            .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.corner)
-                    .stroke(Color.appPrimary.opacity(configuration.isPressed ? 0.7 : 1.0), lineWidth: 1.5)
-            )
-            .background(Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.corner))
-            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
-    }
-}
-enum AppButtonKind { case filled, outline }
-struct AppButtonStyleModifier: ViewModifier {
-    let kind: AppButtonKind
-    func body(content: Content) -> some View {
-        switch kind {
-        case .filled:  content.buttonStyle(AppFilledButtonStyle())
-        case .outline: content.buttonStyle(AppOutlineButtonStyle())
-        }
-    }
-}
-extension View {
-    func appButtonStyle(_ kind: AppButtonKind) -> some View {
-        self.modifier(AppButtonStyleModifier(kind: kind))
-    }
-}
 struct AppButton: View {
     var title: String
     var fill: Bool = true
     var fullWidth: Bool = true
     var action: () -> Void
     var body: some View {
-        Button(title, action: action)
-            .font(.title3)
-            .largeControl()
-            .frame(maxWidth: fullWidth ? .infinity : nil)
-            .appButtonStyle(fill ? .filled : .outline)
+        Button(action: action) {
+            Text(title).font(.title3).bold().frame(maxWidth: fullWidth ? .infinity : nil).padding(.vertical, 12)
+        }
+        .foregroundColor(fill ? .white : .appPrimary)
+        .background(fill ? Color.appAccent : Color.clear)
+        .overlay(RoundedRectangle(cornerRadius: AppTheme.corner).stroke(Color.appPrimary, lineWidth: fill ? 0 : 1.5))
+        .cornerRadius(AppTheme.corner)
     }
 }
 
-/* ----------------- Tarjetas y utilidades ----------------- */
-struct PrimaryCard<Content: View>: View {
-    var alignment: HorizontalAlignment = .leading
-    @ViewBuilder var content: () -> Content
-    var body: some View {
-        VStack(alignment: alignment, spacing: AppTheme.spacing, content: content)
-            .cardStyle()
-    }
-}
-
-/* StatCard con opción de “relleno” colorido (azul/naranja) */
 struct StatCard: View {
     var icon: String
     var title: String
     var value: String
-    var fillColor: Color? = nil   // nil = sutil (appCard), color = lleno con texto blanco
-
+    var fill: Color
     var body: some View {
-        if let fill = fillColor {
-            let grad = LinearGradient(
-                colors: [fill.opacity(0.95), fill.opacity(0.8)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            VStack(alignment: .leading, spacing: 8) {
-                Label(title, systemImage: icon).font(.headline)
+        HStack(spacing: 12) {
+            ZStack {
+                Circle().fill(fill.opacity(0.18)).frame(width: 38, height: 38)
+                Image(systemName: icon).foregroundStyle(fill).font(.system(size: 17, weight: .semibold))
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title).font(.headline)
                 Text(value).font(.largeTitle).bold()
             }
-            .foregroundStyle(Color.white)
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(grad)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.corner))
-        } else {
-            PrimaryCard {
-                Label(title, systemImage: icon).font(.headline)
-                Text(value).font(.largeTitle).bold()
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            Spacer()
         }
+        .padding(AppTheme.padding)
+        .background(Color.appCard)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.corner))
     }
 }
 
-struct LabeledValueRow: View {
-    var label: String
-    var value: String
-    var body: some View {
-        HStack { Text(label).foregroundStyle(.secondary); Spacer(); Text(value) }
-            .primaryText()
-    }
-}
-
-struct EmptyStateView: View {
-    var icon: String
+struct AppointmentCard: View {
     var title: String
-    var message: String
-    var actionTitle: String? = nil
-    var action: (() -> Void)? = nil
+    var subtitle: String
+    var cancel: () -> Void
     var body: some View {
-        VStack(spacing: AppTheme.bigSpacing) {
-            Image(systemName: icon).font(.system(size: 56))
-            VStack(spacing: 6) {
-                Text(title).font(.title).bold()
-                Text(message).multilineTextAlignment(.center).foregroundStyle(.secondary)
+        HStack {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title).font(.headline).foregroundStyle(.white.opacity(0.9))
+                Text(subtitle).foregroundStyle(.white.opacity(0.8))
             }
-            if let actionTitle, let action { AppButton(title: actionTitle, action: action) }
+            Spacer()
+            Button(action: cancel) {
+                Text("Cancelar turno").font(.callout).bold().padding(.horizontal, 14).padding(.vertical, 8).foregroundStyle(.white)
+            }
+            .background(Color.appAccent)
+            .clipShape(Capsule())
         }
-        .padding(24)
+        .padding(AppTheme.padding)
+        .background(RoundedRectangle(cornerRadius: AppTheme.corner).fill(Color.appPanel))
+        .shadow(color: .black.opacity(0.18), radius: 8, x: 0, y: 4)
     }
 }
 
-/* ----------------- Modelo + Estado global ----------------- */
 struct Cita: Identifiable, Codable, Hashable {
     let id: UUID
     let paciente: String
@@ -191,15 +99,15 @@ struct Cita: Identifiable, Codable, Hashable {
 final class AppState: ObservableObject {
     @Published var citas: [Cita] = [] { didSet { save() } }
     @Published var selectedTab: Int = 0
-
     init() { citas = Self.load() }
-
     func agregar(_ cita: Cita) { citas.append(cita) }
-
+    func proxima() -> Cita? { citas.sorted { $0.fecha < $1.fecha }.first }
+    func cancelarProxima() {
+        guard let p = proxima(), let idx = citas.firstIndex(of: p) else { return }
+        citas.remove(at: idx)
+    }
     private func save() {
-        if let data = try? JSONEncoder().encode(citas) {
-            UserDefaults.standard.set(data, forKey: "citas")
-        }
+        if let data = try? JSONEncoder().encode(citas) { UserDefaults.standard.set(data, forKey: "citas") }
     }
     private static func load() -> [Cita] {
         guard let data = UserDefaults.standard.data(forKey: "citas"),
@@ -208,57 +116,25 @@ final class AppState: ObservableObject {
     }
 }
 
-/* ----------------- Tab bar: colores seleccionado / no seleccionado ----------------- */
 struct TabBarConfigurator: UIViewControllerRepresentable {
     var selected: UIColor
     var unselected: UIColor
     func makeUIViewController(context: Context) -> UIViewController {
         let vc = UIViewController()
-        let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(Color.appBackground)
-        UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance
+        let a = UITabBarAppearance()
+        a.configureWithOpaqueBackground()
+        a.backgroundColor = UIColor(Color.appBackground)
+        UITabBar.appearance().standardAppearance = a
+        UITabBar.appearance().scrollEdgeAppearance = a
         UITabBar.appearance().tintColor = selected
         UITabBar.appearance().unselectedItemTintColor = unselected
         return vc
     }
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
+
 extension View {
     func tabBarColors(selected: Color, unselected: Color) -> some View {
-        self.background(
-            TabBarConfigurator(selected: UIColor(selected), unselected: UIColor(unselected))
-        )
+        background(TabBarConfigurator(selected: UIColor(selected), unselected: UIColor(unselected)))
     }
 }
-
-struct AppTextField: View {
-    var placeholder: String
-    @Binding var text: String
-
-    var body: some View {
-        TextField(placeholder, text: $text)
-            .textInputAutocapitalization(.never)
-            .autocorrectionDisabled(true)
-            .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .font(.title3)
-    }
-}
-
-struct AppSecureField: View {
-    var placeholder: String
-    @Binding var text: String
-
-    var body: some View {
-        SecureField(placeholder, text: $text)
-            .textInputAutocapitalization(.never)
-            .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .font(.title3)
-    }
-}
-
