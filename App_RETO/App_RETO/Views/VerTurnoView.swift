@@ -1,10 +1,3 @@
-//
-//  TurnoViewOliver.swift
-//  App_RETO
-//
-//  Created by Alumno on 29/08/25.
-//
-
 import SwiftUI
 
 struct VerTurnoView: View {
@@ -14,8 +7,7 @@ struct VerTurnoView: View {
     @Binding var loggedIn: Bool
     
     var body: some View {
-        NavigationStack{
-            
+        NavigationStack {
             VStack(spacing: 12) {
                 HStack {
                     Spacer()
@@ -25,58 +17,51 @@ struct VerTurnoView: View {
                 .padding(.horizontal)
                 .padding(.top, 6)
                 
-                ScrollView {
-                    VStack(spacing: 18) {
-                        TurnoProfileImage(size: 120)
-                            .padding(.top, 16)
-                        
-                        Text(subtitle)
-                            .font(.title3)
-                            .bold()
-                            .foregroundStyle(.white)
-                        
-                        Text("Tu turno: ")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                            .padding(20)
-                        Text("02")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                            .padding(10)
-                        Text("Ventanilla: ")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                            .padding(10)
-                        Text("03")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                            .padding(10)
-                        Spacer()
-                        HStack(spacing: 35) {
-                            BotonPantallasSecundario(title: "Salir", pantalla: DashboardUserView(usuario: usuario, loggedIn: .constant(true)), color: .ColorBoton)
-                            
-                            
-                        }
-                        .padding(.bottom, 8)
-                        .frame(width: .infinity)
-                        Spacer()
+                VStack(spacing: 18) {
+                    TurnoProfileImage(size: 120)
+                        .padding(.top, 16)
+                    
+                    Text(subtitle)
+                        .font(.title3)
+                        .bold()
+                        .foregroundStyle(.white)
+                    
+                    Text("Tu turno: ")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                    Text("02")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                    Text("Ventanilla: ")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                    Text("03")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 35) {
+                        BotonPantallasSecundario(
+                            title: "Salir",
+                            pantalla: DashboardUserView(usuario: usuario, loggedIn: .constant(true)),
+                            color: .ColorBoton
+                        )
                     }
-                    .padding(20)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.pantallasColor)
-                    )
-                    .padding(.horizontal,40)
-                   
+                    .padding(.bottom, 20)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity) // ocupa toda la pantalla
+                .background(
+                    RoundedRectangle(cornerRadius: 0) // sin bordes redondeados
+                        .fill(Color.pantallasColor)
+                        .ignoresSafeArea()
+                )
             }
-            
         }
-        
         .navigationBarBackButtonHidden(true)
     }
 }
