@@ -7,50 +7,37 @@
 import SwiftUI
 
 struct DashboardAdminView: View {
+    @EnvironmentObject var appState: AppState
     var usuario: String
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Hola, \(usuario)")
-                    .font(.largeTitle)
-                    .bold()
+                Text("Hola, \(usuario)").font(.largeTitle).bold()
 
                 HStack(spacing: 12) {
-                    card(numero: 2, titulo: "Próximas citas", icono: "calendar")
-                    card(numero: 8, titulo: "Medicamentos", icono: "pills.fill")
+                    StatCard(icon: "calendar", title: "Próximas citas", value: "\(appState.citas.count)")
+                    StatCard(icon: "pills.fill", title: "Medicamentos", value: "8")
                 }
 
-                NavigationLink("Agendar nuevo turno") {
-                    AgendarTurnoView()
+                AppButton(title: "Agendar nuevo turno") {
+                    appState.selectedTab = 1          // <— te lleva al tab Agendar
                 }
-                .font(.title3)
-                .controlSize(.large)
-                .buttonStyle(.borderedProminent)
 
-                Text("Hoy")
-                    .font(.title2)
-                    .padding(.top, 8)
+                Text("Hoy").font(.title2).padding(.top, 8)
 
-                TurnoView(paciente: "Juan Pérez", fecha: Date().addingTimeInterval(3600))
-                TurnoView(paciente: "Ana López", fecha: Date().addingTimeInterval(7200))
+                if appState.citas.isEmpty {
+                    EmptyStateView(icon: "tray", title: "Sin turnos", message: "Aún no tienes turnos agendados.")
+                        .frame(maxWidth: .infinity)
+                } else {
+                    ForEach(appState.citas.prefix(2)) { cita in
+                        TurnoView(paciente: cita.paciente, fecha: cita.fecha)
+                    }
+                }
             }
             .padding()
         }
+        .background(Color.appBackground)
         .navigationTitle("Inicio")
-    }
-
-    private func card(numero: Int, titulo: String, icono: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label(titulo, systemImage: icono)
-                .font(.headline)
-            Text("\(numero)")
-                .font(.largeTitle)
-                .bold()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(.thinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }

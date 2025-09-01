@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct AgendarTurnoView: View {
+    @EnvironmentObject var appState: AppState
+    var paciente: String
+
     @State private var fecha = Date()
     @State private var especialidad = "Médico General"
     @State private var notas = ""
@@ -20,7 +23,7 @@ struct AgendarTurnoView: View {
             Section("Fecha y hora") {
                 DatePicker("Selecciona", selection: $fecha, displayedComponents: [.date, .hourAndMinute])
                     .datePickerStyle(.compact)
-                    .font(.title3)
+                    .primaryText()
             }
             Section("Especialidad") {
                 Picker("Área", selection: $especialidad) {
@@ -33,19 +36,21 @@ struct AgendarTurnoView: View {
                     .lineLimit(3, reservesSpace: true)
             }
             Section {
-                Button("Confirmar turno") {
+                AppButton(title: "Confirmar turno") {
+                    let cita = Cita(paciente: paciente, fecha: fecha, especialidad: especialidad, notas: notas)
+                    appState.agregar(cita)
                     confirmado = true
                 }
-                .controlSize(.large)
-                .buttonStyle(.borderedProminent)
             }
         }
-        .font(.title3)
+        .primaryText()
         .navigationTitle("Agendar")
         .alert("Turno confirmado", isPresented: $confirmado) {
-            Button("OK", role: .cancel) {}
+            Button("Ver mis turnos") { appState.selectedTab = 2 }   // <— cambia a “Mis turnos”
+            Button("OK", role: .cancel) { }
         } message: {
             Text("\(especialidad) • \(fecha.formatted(date: .abbreviated, time: .shortened))")
         }
+        .background(Color.appBackground)
     }
 }

@@ -17,42 +17,34 @@ struct InicioSesion: View {
     private let validPass = "1234"
 
     var body: some View {
-        VStack(spacing: 20) {
-            Image("LogoTurnoMed")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 220)
+        ZStack {
+            Color.appBackground.ignoresSafeArea()
+            VStack(spacing: 28) {
+                Image("LogoTurnoMed")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 220)
+                    .padding(.top, 60)
 
-            VStack(spacing: 12) {
-                TextField("Usuario", text: $usuario)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled(true)
-                    .padding()
-                    .background(.thinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-
-                SecureField("Contraseña", text: $contrasena)
-                    .textInputAutocapitalization(.never)
-                    .padding()
-                    .background(.thinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-            }
-
-            Button("Iniciar sesión") {
-                if usuario == validUser && contrasena == validPass {
-                    loggedIn = true
-                } else {
-                    mostrarError = true
+                VStack(spacing: 16) {
+                    AppTextField(placeholder: "Usuario", text: $usuario)
+                    AppSecureField(placeholder: "Contraseña", text: $contrasena)
                 }
-            }
-            .font(.title3)
-            .controlSize(.large)
-            .buttonStyle(.borderedProminent)
+                .padding(.horizontal, 32)
 
-            Spacer()
+                AppButton(title: "Iniciar sesión") {
+                    if usuario == validUser && contrasena == validPass {
+                        loggedIn = true
+                    } else {
+                        mostrarError = true
+                    }
+                }
+                .padding(.horizontal, 32)
+                .padding(.top, 12)
+
+                Spacer()
+            }
         }
-        .padding()
-        .font(.title3)
         .alert("Credenciales inválidas", isPresented: $mostrarError) {
             Button("OK", role: .cancel) { }
         } message: {
