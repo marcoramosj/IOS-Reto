@@ -22,7 +22,7 @@ struct UserTabs: View {
             }
 
             NavigationStack {
-                TurnoViewOliver()
+                VerTurnoView(usuario: "marcoramos", loggedIn: .constant(true))
             }
             .tabItem {
                 Image(systemName: "number.circle.fill")

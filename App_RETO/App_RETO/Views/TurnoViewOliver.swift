@@ -61,9 +61,7 @@ struct TurnoViewOliver: View {
                         
                         
                     }
-                    .padding(.bottom, 8)
-                    .frame(width: .infinity)
-                    Spacer()
+                    
                 }
                 .padding(20)
                 .background(
