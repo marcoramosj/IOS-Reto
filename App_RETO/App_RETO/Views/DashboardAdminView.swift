@@ -18,7 +18,7 @@ struct DashboardAdminView: View {
 
                 if let proxima = appState.proxima() {
                     AppointmentCard(
-                        title: "Up coming Appointment",
+                        title: "Proxima Cita",
                         subtitle: proxima.fecha.formatted(date: .abbreviated, time: .shortened),
                         cancel: { showCancel = true }
                     )
@@ -30,8 +30,8 @@ struct DashboardAdminView: View {
                 AppButton(title: "Agendar nuevo turno") { appState.selectedTab = 1 }
 
                 HStack(spacing: 12) {
-                    StatCard(icon: "calendar", title: "Upcoming", value: "\(appState.citas.count)", fill: .appPrimary)
-                    StatCard(icon: "pills.fill", title: "Total Medication", value: "8", fill: .appAccent)
+                    StatCard(icon: "calendar", title: "Proximos turnos:", value: "\(appState.citas.count)", fill: .appPrimary)
+                    StatCard(icon: "pills.fill", title: "Medicamentos", value: "8", fill: .appAccent)
                 }
 
                 if !appState.citas.isEmpty {
