@@ -18,9 +18,9 @@ struct AppTheme {
 extension Color {
     static var appPrimary: Color {
         if let ui = UIColor(named: "AppPrimary") { return Color(ui) }
-        return Color.accentColor
+        return Color.blue
     }
-    static var appAccent: Color {                  // NARANJA del logo
+    static var appAccent: Color {
         if let ui = UIColor(named: "AppAccent") { return Color(ui) }
         return Color.orange
     }
@@ -49,14 +49,14 @@ extension View {
     func primaryFill() -> some View { self.tint(.appPrimary) }
 }
 
-/* Botones compatibles */
+/* ----------------- Botones compatibles ----------------- */
 struct AppFilledButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .foregroundStyle(Color.white)
             .padding(.vertical, 12).padding(.horizontal, 16)
             .frame(maxWidth: .infinity)
-            .background(Color.appAccent.opacity(configuration.isPressed ? 0.85 : 1.0)) // NARANJA
+            .background(Color.appAccent.opacity(configuration.isPressed ? 0.85 : 1.0))
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.corner))
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
@@ -105,32 +105,7 @@ struct AppButton: View {
     }
 }
 
-struct AppTextField: View {
-    var placeholder: String
-    @Binding var text: String
-    var body: some View {
-        TextField(placeholder, text: $text)
-            .textInputAutocapitalization(.never)
-            .autocorrectionDisabled(true)
-            .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.corner))
-            .primaryText()
-    }
-}
-struct AppSecureField: View {
-    var placeholder: String
-    @Binding var text: String
-    var body: some View {
-        SecureField(placeholder, text: $text)
-            .textInputAutocapitalization(.never)
-            .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.corner))
-            .primaryText()
-    }
-}
-
+/* ----------------- Tarjetas y utilidades ----------------- */
 struct PrimaryCard<Content: View>: View {
     var alignment: HorizontalAlignment = .leading
     @ViewBuilder var content: () -> Content
@@ -139,26 +114,55 @@ struct PrimaryCard<Content: View>: View {
             .cardStyle()
     }
 }
+
+/* StatCard con opción de “relleno” colorido (azul/naranja) */
 struct StatCard: View {
-    var icon: String; var title: String; var value: String
+    var icon: String
+    var title: String
+    var value: String
+    var fillColor: Color? = nil   // nil = sutil (appCard), color = lleno con texto blanco
+
     var body: some View {
-        PrimaryCard {
-            Label(title, systemImage: icon).font(.headline)
-            Text(value).font(.largeTitle).bold()
+        if let fill = fillColor {
+            let grad = LinearGradient(
+                colors: [fill.opacity(0.95), fill.opacity(0.8)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            VStack(alignment: .leading, spacing: 8) {
+                Label(title, systemImage: icon).font(.headline)
+                Text(value).font(.largeTitle).bold()
+            }
+            .foregroundStyle(Color.white)
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(grad)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.corner))
+        } else {
+            PrimaryCard {
+                Label(title, systemImage: icon).font(.headline)
+                Text(value).font(.largeTitle).bold()
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
+
 struct LabeledValueRow: View {
-    var label: String; var value: String
+    var label: String
+    var value: String
     var body: some View {
         HStack { Text(label).foregroundStyle(.secondary); Spacer(); Text(value) }
             .primaryText()
     }
 }
+
 struct EmptyStateView: View {
-    var icon: String; var title: String; var message: String
-    var actionTitle: String? = nil; var action: (() -> Void)? = nil
+    var icon: String
+    var title: String
+    var message: String
+    var actionTitle: String? = nil
+    var action: (() -> Void)? = nil
     var body: some View {
         VStack(spacing: AppTheme.bigSpacing) {
             Image(systemName: icon).font(.system(size: 56))
@@ -172,7 +176,7 @@ struct EmptyStateView: View {
     }
 }
 
-/* Modelo + Estado global */
+/* ----------------- Modelo + Estado global ----------------- */
 struct Cita: Identifiable, Codable, Hashable {
     let id: UUID
     let paciente: String
@@ -183,9 +187,10 @@ struct Cita: Identifiable, Codable, Hashable {
         self.id = id; self.paciente = paciente; self.fecha = fecha; self.especialidad = especialidad; self.notas = notas
     }
 }
+
 final class AppState: ObservableObject {
     @Published var citas: [Cita] = [] { didSet { save() } }
-    @Published var selectedTab: Int = 0                         // <— pestaña global
+    @Published var selectedTab: Int = 0
 
     init() { citas = Self.load() }
 
@@ -202,3 +207,58 @@ final class AppState: ObservableObject {
         return items
     }
 }
+
+/* ----------------- Tab bar: colores seleccionado / no seleccionado ----------------- */
+struct TabBarConfigurator: UIViewControllerRepresentable {
+    var selected: UIColor
+    var unselected: UIColor
+    func makeUIViewController(context: Context) -> UIViewController {
+        let vc = UIViewController()
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(Color.appBackground)
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+        UITabBar.appearance().tintColor = selected
+        UITabBar.appearance().unselectedItemTintColor = unselected
+        return vc
+    }
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+}
+extension View {
+    func tabBarColors(selected: Color, unselected: Color) -> some View {
+        self.background(
+            TabBarConfigurator(selected: UIColor(selected), unselected: UIColor(unselected))
+        )
+    }
+}
+
+struct AppTextField: View {
+    var placeholder: String
+    @Binding var text: String
+
+    var body: some View {
+        TextField(placeholder, text: $text)
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled(true)
+            .padding()
+            .background(Color.appCard)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .font(.title3)
+    }
+}
+
+struct AppSecureField: View {
+    var placeholder: String
+    @Binding var text: String
+
+    var body: some View {
+        SecureField(placeholder, text: $text)
+            .textInputAutocapitalization(.never)
+            .padding()
+            .background(Color.appCard)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .font(.title3)
+    }
+}
+

@@ -35,7 +35,8 @@ struct ContentView: View {
                                 .tabItem { Label("Perfil", systemImage: "person.crop.circle") }
                                 .tag(3)
                         }
-                        .tint(.appPrimary)
+                        .tabBarColors(selected: .appPrimary,   // AZUL cuando está seleccionada
+                                      unselected: .appAccent)  // NARANJA por defecto
                     }
                 } else {
                     InicioSesion(usuario: $usuario, loggedIn: $loggedIn)

@@ -16,12 +16,16 @@ struct DashboardAdminView: View {
                 Text("Hola, \(usuario)").font(.largeTitle).bold()
 
                 HStack(spacing: 12) {
-                    StatCard(icon: "calendar", title: "Próximas citas", value: "\(appState.citas.count)")
-                    StatCard(icon: "pills.fill", title: "Medicamentos", value: "8")
+                    StatCard(icon: "calendar", title: "Próximas citas",
+                             value: "\(appState.citas.count)",
+                             fillColor: .appPrimary) // AZUL
+                    StatCard(icon: "pills.fill", title: "Medicamentos",
+                             value: "8",
+                             fillColor: .appAccent)  // NARANJA
                 }
 
                 AppButton(title: "Agendar nuevo turno") {
-                    appState.selectedTab = 1          // <— te lleva al tab Agendar
+                    appState.selectedTab = 1
                 }
 
                 Text("Hoy").font(.title2).padding(.top, 8)
