@@ -163,7 +163,7 @@ struct BarraInferior: View {
                     Text("Agendar")
                 }
 
-            NavigationStack { VerTurnoView() }
+            NavigationStack { VerTurnoView(usuario: "marcoramos", loggedIn: .constant(true)) }
                 .tabItem {
                     Image(systemName: "list.bullet.rectangle")
                     Text("Turnos")

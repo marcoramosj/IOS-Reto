@@ -97,6 +97,25 @@ struct BotonPantallas<Destino: View>: View{
     }
 }
 
+struct BotonPantallasSecundario<Destino: View>: View {
+    
+    var title: String
+    var pantalla: Destino
+    var color: Color
+    var body: some View{
+        NavigationLink(destination: pantalla){
+            HStack {
+                Text(title)
+                    .font(.system(size: 18, weight: .medium))
+            }
+            .padding(.horizontal, 10) // margen interno
+            .frame(maxWidth: 100, minHeight: 50)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(color)
+    }
+}
+
 
 struct AppointmentCard: View {
     var title: String
