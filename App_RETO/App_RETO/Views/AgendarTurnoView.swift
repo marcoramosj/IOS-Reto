@@ -127,9 +127,7 @@ struct AgendarTurnoView: View {
             Button("Aceptar") {
                 print("Ver Turno")
                 
-                NavigationLink(destination: VerTurnoView()) {
-                    EmptyView()
-                }
+                
                 
                 
             }

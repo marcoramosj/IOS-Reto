@@ -71,20 +71,15 @@ struct TurnoView: View {
                         .lineLimit(3, reservesSpace: true)
                         .textFieldStyle(.roundedBorder)
                     
-                    HStack(spacing: 12) {
-                        Button("Salir") {
+                    HStack(spacing: 35) {
+                        BotonSecundario(title:"Salir") {
                             dismiss()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Color.Buttoncolor)
-                        .frame(maxWidth: .infinity)
+                        }.tint(Color.ColorBoton)
                         
-                        Button("Aceptar") {
+                        BotonSecundario(title:"Aceptar") {
                             
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Color.Buttoncolor)
-                        .frame(maxWidth: .infinity)
+                        }.tint(Color.ColorBoton)
+                        
                     }
                     .padding(.bottom, 8)
                 }

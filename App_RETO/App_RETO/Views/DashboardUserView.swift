@@ -54,7 +54,7 @@ struct DashboardUserView: View {
                                 secondaryButton: .cancel()
                             )
                         }
-                            .tint(Color.Buttoncolor)
+                            .tint(Color.ColorBoton)
                     }
                     .padding(24)
                     .frame(maxWidth: .infinity)
@@ -62,7 +62,7 @@ struct DashboardUserView: View {
                     .padding(.horizontal, 20)
                     
                     VStack(alignment:.leading, spacing: 12) {
-                        BotonPantallas(title: "Pedir turno", pantalla: TurnoView(), color: .Buttoncolor)
+                        BotonPantallas(title: "Pedir turno", pantalla: TurnoView(), color: .ColorBoton)
                     }
                     .padding(.horizontal, 20)
                     

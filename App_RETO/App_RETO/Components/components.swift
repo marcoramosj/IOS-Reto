@@ -16,7 +16,7 @@ struct AppTheme {
 }
 
 extension Color {
-    static var Buttoncolor: Color { Color(red: 1/255, green:104/255, blue: 138/255)}
+    static var ColorBoton: Color { Color(red: 1/255, green:104/255, blue: 138/255)}
     static var TextoColor: Color { Color(red: 255/255, green: 153/255, blue: 0/255)}
     static var pantallasColor: Color { Color(red: 102/255, green: 102/255, blue: 102/255)}
     
@@ -57,6 +57,23 @@ struct BotonPrincipal: View {
             }
             .padding(.horizontal, 16) // margen interno
             .frame(maxWidth: .infinity, minHeight: 40)
+        }
+        .buttonStyle(.borderedProminent)
+    }
+}
+
+struct BotonSecundario: View {
+    
+    var title: String
+    var action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                    .font(.system(size: 18, weight: .medium))
+            }
+            .padding(.horizontal, 10) // margen interno
+            .frame(maxWidth: 100, minHeight: 50)
         }
         .buttonStyle(.borderedProminent)
     }
