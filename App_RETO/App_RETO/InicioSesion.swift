@@ -47,7 +47,7 @@ struct InicioSesion: View {
             .bold()
             .padding(.vertical, 18)
             .padding(.horizontal, 30)
-            .background(Color(red: 0.012, green: 0.562, blue: 0.734))
+            .background(Color.ColorBoton)
             .foregroundColor(.white)
             .cornerRadius(12)
             .padding(.top)
