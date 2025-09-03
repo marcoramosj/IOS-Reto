@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct TurnoView: View {
+    @Binding var usuario: String
+    @Binding var loggedIn: Bool
     @State private var title = "Agenda un turno"
-    @State private var subtitle = "Example name"
     @Environment(\.dismiss) var dismiss
     @State private var hora = Date()
     @State private var numeroReceta = ""
@@ -34,7 +35,7 @@ struct TurnoView: View {
                         TurnoProfileImage(size: 120)
                             .padding(.top, 16)
                         
-                        Text(subtitle)
+                        Text(usuario)
                             .font(.title3)
                             .bold()
                             .foregroundStyle(.white)
@@ -58,7 +59,7 @@ struct TurnoView: View {
                                 .foregroundStyle(.orange)
                         }
                         
-                        sectionLabel("NUMERO DE RECETA")
+                        sectionLabel("\(usuario)")
                             .foregroundStyle(Color.TextoColor)
                         TextField("Número", text: $numeroReceta)
                             .textFieldStyle(.roundedBorder)
@@ -79,7 +80,7 @@ struct TurnoView: View {
                                 dismiss()
                             }.tint(Color.ColorBoton)
                             
-                            BotonPantallasSecundario(title: "Aceptar", pantalla: VerTurnoView(usuario: "marcoramos", loggedIn: .constant(true)), color: .ColorBoton)
+                            BotonPantallasSecundario(title: "Aceptar", pantalla: VerTurnoView(usuario:$usuario , loggedIn: $loggedIn), color: .ColorBoton)
                             
                         }
                         .padding(.bottom, 8)
@@ -101,5 +102,5 @@ struct TurnoView: View {
 }
 
 #Preview {
-    TurnoView()
+    TurnoView(usuario:.constant(""),loggedIn: .constant(true))
 }

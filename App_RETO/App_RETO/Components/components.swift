@@ -21,6 +21,22 @@ extension Color {
     static var pantallasColor: Color { Color(red: 102/255, green: 102/255, blue: 102/255)}
     
 }
+struct Usuario{
+    var nombre:String
+    var clave:String
+    var id:String
+}
+
+struct BasedeDatos{
+    static let emp1=Usuario(nombre:"marcoramos",clave:"1234",id:"ID0001")
+    static let emp2=Usuario(nombre:"pedrosola",clave:"1234",id:"ID0035")
+    static let emp3=Usuario(nombre:"nachoperez",clave:"1234",id:"ID0801")
+
+
+    static let info = [emp1,emp2,emp3]
+    
+    static var usuarioR = [["ID0001",6,"RID0001"],["ID0035",3,"RID0035"],["ID0801",4,"RID0801"]]
+}
 
 
 struct StatCard: View {
@@ -115,7 +131,6 @@ struct BotonPantallasSecundario<Destino: View>: View {
         .tint(color)
     }
 }
-
 
 struct AppointmentCard: View {
     var title: String

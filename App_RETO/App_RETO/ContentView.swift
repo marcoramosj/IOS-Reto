@@ -8,18 +8,14 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var loggedIn = false
     @State private var usuario = ""
+    @State private var loggedIn = false
 
     var body: some View {
         if loggedIn {
-            UserTabs(usuario: usuario, loggedIn: $loggedIn)
+            DashboardUserView(usuario: $usuario, loggedIn: $loggedIn)
         } else {
             InicioSesion(usuario: $usuario, loggedIn: $loggedIn)
         }
     }
-}
-
-#Preview {
-    ContentView()
 }

@@ -14,9 +14,6 @@ struct InicioSesion: View {
     @State private var contrasena = ""
     @State private var showAlert = false
     
-    // Credenciales fijas
-    private let validUser = "marcoramos"
-    private let validPass = "1234"
     
     var body: some View {
         VStack(spacing: 10) {
@@ -38,12 +35,13 @@ struct InicioSesion: View {
                 .padding(.horizontal)
             
             Button("Iniciar Sesión") {
-                if usuario == validUser && contrasena == validPass {
+                if BasedeDatos.info.contains(where: { $0.nombre == usuario && $0.clave == contrasena }) {
                     loggedIn = true
                 } else {
                     showAlert = true
                 }
             }
+
             .bold()
             .padding(.vertical, 18)
             .padding(.horizontal, 30)
@@ -65,5 +63,5 @@ struct InicioSesion: View {
 }
 
 #Preview {
-    InicioSesion(usuario: .constant(""), loggedIn: .constant(false))
+    InicioSesion(usuario:.constant("") , loggedIn: .constant(false))
 }

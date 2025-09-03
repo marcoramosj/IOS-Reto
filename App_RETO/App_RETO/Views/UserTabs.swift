@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct UserTabs: View {
-    let usuario: String
+    @Binding var usuario: String
     @Binding var loggedIn: Bool
 
     var body: some View {
         TabView {
             NavigationStack {
-                DashboardUserView(usuario: usuario, loggedIn: $loggedIn)
+                DashboardUserView(usuario:$usuario , loggedIn: $loggedIn)
             }
             .tabItem {
                 Image(systemName: "house.fill")
@@ -22,7 +22,7 @@ struct UserTabs: View {
             }
 
             NavigationStack {
-                VerTurnoView(usuario: "marcoramos", loggedIn: .constant(true))
+                VerTurnoView(usuario:$usuario , loggedIn: $loggedIn)
             }
             .tabItem {
                 Image(systemName: "number.circle.fill")
@@ -41,5 +41,5 @@ struct UserTabs: View {
 }
 
 #Preview {
-    UserTabs(usuario: "marcoramos", loggedIn: .constant(true))
+    UserTabs(usuario:.constant("") , loggedIn: .constant(true))
 }

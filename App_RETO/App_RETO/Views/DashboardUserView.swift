@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DashboardUserView: View {
-    let usuario: String
+    @Binding var usuario: String
     @Binding var loggedIn: Bool
     @State private var alerta: Bool = false
 
@@ -62,7 +62,7 @@ struct DashboardUserView: View {
                     .padding(.horizontal, 20)
                     
                     VStack(alignment:.leading, spacing: 12) {
-                        BotonPantallas(title: "Pedir turno", pantalla: TurnoView(), color: .ColorBoton)
+                        BotonPantallas(title: "Pedir turno", pantalla: TurnoView(usuario:$usuario , loggedIn: $loggedIn), color: .ColorBoton)
                     }
                     .padding(.horizontal, 20)
                     
@@ -75,5 +75,5 @@ struct DashboardUserView: View {
 }
 
 #Preview {
-    DashboardUserView(usuario: "marcoramos", loggedIn: .constant(true))
+    DashboardUserView(usuario: .constant(""), loggedIn: .constant(true))
 }

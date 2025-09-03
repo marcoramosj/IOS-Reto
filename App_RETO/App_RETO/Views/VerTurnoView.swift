@@ -3,7 +3,7 @@ import SwiftUI
 struct VerTurnoView: View {
     @State private var title = "Agenda un turno"
     @State private var subtitle = "Example name"
-    let usuario: String
+    @Binding var usuario: String
     @Binding var loggedIn: Bool
     
     var body: some View {
@@ -26,7 +26,7 @@ struct VerTurnoView: View {
                         .bold()
                         .foregroundStyle(.white)
                     
-                    Text("Tu turno: ")
+                    Text("Tu turno: \(usuario)")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .foregroundStyle(.white)
@@ -48,7 +48,7 @@ struct VerTurnoView: View {
                     HStack(spacing: 35) {
                         BotonPantallasSecundario(
                             title: "Salir",
-                            pantalla: DashboardUserView(usuario: usuario, loggedIn: .constant(true)),
+                            pantalla: DashboardUserView(usuario:$usuario , loggedIn: $loggedIn),
                             color: .ColorBoton
                         )
                     }
@@ -67,5 +67,5 @@ struct VerTurnoView: View {
 }
 
 #Preview {
-    VerTurnoView(usuario: "marcoramos", loggedIn: .constant(true))
+    VerTurnoView(usuario:.constant(""), loggedIn: .constant(true))
 }
