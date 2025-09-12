@@ -10,31 +10,32 @@ import SwiftUI
 struct UserTabs: View {
     @Binding var usuario: String
     @Binding var loggedIn: Bool
-
+    
     var body: some View {
-        TabView {
-            NavigationStack {
-                DashboardUserView(usuario:$usuario , loggedIn: $loggedIn)
+        VStack{
+            TabView {
+                NavigationStack {
+                    DashboardUserView(usuario:$usuario , loggedIn: $loggedIn)
+                }
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Inicio")
+                }
+                
+                NavigationStack {
+                    VerTurnoView(usuario:$usuario , loggedIn: $loggedIn)
+                }
+                .tabItem {
+                    Image(systemName: "number.circle.fill")
+                    Text("Turno")
+                }
+                
+                
             }
-            .tabItem {
-                Image(systemName: "house.fill")
-                Text("Inicio")
-            }
-
-            NavigationStack {
-                VerTurnoView(usuario:$usuario , loggedIn: $loggedIn)
-            }
-            .tabItem {
-                Image(systemName: "number.circle.fill")
-                Text("Turno")
-            }
-
-            NavigationStack {
-                ConfiguracionView(loggedIn: $loggedIn)
-            }
-            .tabItem {
-                Image(systemName: "gearshape.fill")
-                Text("Config.")
+            .onAppear() {
+                UITabBar.appearance().barTintColor = UIColor.orange
+                UITabBar.appearance().backgroundColor = UIColor.white
+                UITabBar.appearance().unselectedItemTintColor = UIColor.orange
             }
         }
     }
