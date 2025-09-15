@@ -2,7 +2,7 @@
 //  TurnoView.swift
 //  Proyecto_Avance
 //
-//  Created by ediaz205  on 8/27/25.
+//  Created by Alumno  on 8/27/25.
 //
 
 import SwiftUI
@@ -76,11 +76,11 @@ struct TurnoView: View {
                             .textFieldStyle(.roundedBorder)
                         
                         HStack(spacing: 35) {
-                            BotonSecundario(title:"Salir") {
+                            BotonSecundario(title:"Cancelar") {
                                 dismiss()
                             }.tint(Color.ColorBoton)
                             
-                            BotonPantallasSecundario(title: "Aceptar", pantalla: VerTurnoView(usuario:$usuario , loggedIn: $loggedIn), color: .ColorBoton)
+                            BotonPantallasSecundario(title: "Agendar", pantalla: VerTurnoView(usuario:$usuario , loggedIn: $loggedIn), color: .ColorBoton)
                             
                         }
                         .padding(.bottom, 8)
