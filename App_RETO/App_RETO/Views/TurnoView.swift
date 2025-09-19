@@ -16,11 +16,10 @@ struct TurnoView: View {
     @State private var numeroReceta = ""
     @State private var idReceta = ""
     @State private var comentario = ""
+    @State private var mostrarDatePicker = false
     
     var body: some View {
         NavigationStack {
-            
-            
             VStack(spacing: 12) {
                 HStack {
                     Spacer()
@@ -38,39 +37,44 @@ struct TurnoView: View {
                         Text(usuario)
                             .font(.title3)
                             .bold()
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.orange)
                         
                         sectionLabel("ESCOGE UN HORA")
+                            .foregroundStyle(.gray)
+                        
                         HStack {
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("Hora").font(.headline).foregroundStyle(Color.TextoColor)
+                                Text("Hora").font(.headline).foregroundStyle(.orange)
                                 Text(hora, style: .time)
-                                    .foregroundColor(Color.TextoColor) 
+                                    .foregroundColor(.orange)
                                     .font(.system(size: 20, weight: .bold))
-                                
-                                DatePicker("", selection: $hora, displayedComponents: .hourAndMinute)
-                                    .labelsHidden()
-                                    .frame(width: 0, height: 0)
-                                    .clipped()
                             }
                             Spacer()
-                            Image(systemName: "calendar")
-                                .font(.title3)
-                                .foregroundStyle(.orange)
+                            Button {
+                                mostrarDatePicker = true
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "calendar")
+                                        .font(.title3)
+                                        .foregroundStyle(.orange)
+                                    Image(systemName: "chevron.right")
+                                        .foregroundStyle(.gray)
+                                }
+                            }
                         }
                         
                         sectionLabel("\(usuario)")
-                            .foregroundStyle(Color.TextoColor)
+                            .foregroundStyle(.gray)
                         TextField("Número", text: $numeroReceta)
                             .textFieldStyle(.roundedBorder)
                         
                         sectionLabel("ID de receta")
-                            .foregroundStyle(Color.TextoColor)
+                            .foregroundStyle(.gray)
                         TextField("ID", text: $idReceta)
                             .textFieldStyle(.roundedBorder)
                         
                         sectionLabel("COMENTARIOS EXTRA")
-                            .foregroundStyle(Color.TextoColor)
+                            .foregroundStyle(.gray)
                         TextField("Comentario", text: $comentario, axis: .vertical)
                             .lineLimit(3, reservesSpace: true)
                             .textFieldStyle(.roundedBorder)
@@ -81,26 +85,37 @@ struct TurnoView: View {
                             }.tint(Color.ColorBoton)
                             
                             BotonPantallasSecundario(title: "Agendar", pantalla: VerTurnoView(usuario:$usuario , loggedIn: $loggedIn), color: .ColorBoton)
-                            
                         }
                         .padding(.bottom, 8)
                     }
                     .padding(20)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.pantallasColor)
-                    )
-                    .padding(.horizontal)
                 }
-                
             }
             .ignoresSafeArea(edges: .bottom)
             .navigationBarBackButtonHidden(true)
+            .background(Color.white)
+            .sheet(isPresented: $mostrarDatePicker) {
+                VStack {
+                    Text("Selecciona la hora")
+                        .font(.headline)
+                        .padding()
+                    
+                    DatePicker("", selection: $hora, displayedComponents: .hourAndMinute)
+                        .datePickerStyle(.wheel)
+                        .labelsHidden()
+                        .padding()
+                    
+                    Button("Aceptar") {
+                        mostrarDatePicker = false
+                    }
+                    .padding()
+                }
+                .presentationDetents([.fraction(0.35)])
+            }
         }
     }
-    
 }
 
 #Preview {
-    TurnoView(usuario:.constant(""),loggedIn: .constant(true))
+    TurnoView(usuario:.constant("Usuario"), loggedIn: .constant(true))
 }
