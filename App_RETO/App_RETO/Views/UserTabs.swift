@@ -12,35 +12,29 @@ struct UserTabs: View {
     @Binding var loggedIn: Bool
     
     var body: some View {
-        VStack{
-            TabView {
-                NavigationStack {
-                    DashboardUserView(usuario:$usuario , loggedIn: $loggedIn)
-                }
+        TabView {
+            DashboardUserView(usuario: $usuario, loggedIn: $loggedIn)
                 .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Inicio")
+                    Label("Dashboard", systemImage: "house.fill")
                 }
-                
-                NavigationStack {
-                    VerTurnoView(usuario:$usuario , loggedIn: $loggedIn)
-                }
+            
+            TurnoView(usuario: $usuario, loggedIn: $loggedIn)
                 .tabItem {
-                    Image(systemName: "number.circle.fill")
-                    Text("Turno")
+                    Label("Turno", systemImage: "calendar.badge.plus")
                 }
-                
-                
-            }
-            .onAppear() {
-                UITabBar.appearance().barTintColor = UIColor.orange
-                UITabBar.appearance().backgroundColor = UIColor.white
-                UITabBar.appearance().unselectedItemTintColor = UIColor.orange
-            }
+            
+            VerTurnoView(usuario: $usuario, loggedIn: $loggedIn)
+                .tabItem {
+                    Label("Ver Turno", systemImage: "list.bullet.rectangle")
+                }
+            
+
         }
+        .tint(Color.ColorBoton) // tus colores de marca
     }
 }
 
+
 #Preview {
-    UserTabs(usuario:.constant("") , loggedIn: .constant(true))
+    UserTabs(usuario: .constant("Usuario Demo"), loggedIn: .constant(true))
 }

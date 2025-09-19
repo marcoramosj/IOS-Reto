@@ -13,7 +13,7 @@ struct ContentView: View {
 
     var body: some View {
         if loggedIn {
-            DashboardUserView(usuario: $usuario, loggedIn: $loggedIn)
+            UserTabs(usuario: $usuario, loggedIn: $loggedIn)
         } else {
             InicioSesion(usuario: $usuario, loggedIn: $loggedIn)
         }
