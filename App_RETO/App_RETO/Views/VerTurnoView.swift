@@ -3,7 +3,6 @@ import SwiftUI
 struct VerTurnoView: View {
     @Binding var usuario: String
     @Binding var loggedIn: Bool
-    @State private var subtitle = "Example name"
 
     var body: some View {
         NavigationStack {
@@ -12,13 +11,27 @@ struct VerTurnoView: View {
                     VStack(spacing: 18) {
                         TurnoProfileImage(size: 120).padding(.top, 16)
 
-                        Text(subtitle).font(.title3).bold().foregroundStyle(.gray)
-                        Text("Tu turno: \(usuario)").font(.largeTitle).fontWeight(.bold).foregroundStyle(.gray)
+                        Text("Tu turno: \(usuario)")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.gray)
 
-                        Text("02").font(.largeTitle).fontWeight(.heavy).monospacedDigit().foregroundStyle(.orange)
+                        Text("02")
+                            .font(.largeTitle)
+                            .fontWeight(.heavy)
+                            .monospacedDigit()
+                            .foregroundStyle(.orange)
 
-                        Text("Ventanilla:").font(.largeTitle).fontWeight(.bold).foregroundStyle(.gray)
-                        Text("03").font(.largeTitle).fontWeight(.heavy).monospacedDigit().foregroundStyle(.orange)
+                        Text("Ventanilla:")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.gray)
+
+                        Text("03")
+                            .font(.largeTitle)
+                            .fontWeight(.heavy)
+                            .monospacedDigit()
+                            .foregroundStyle(.orange)
 
                         Spacer(minLength: 8)
 
@@ -43,4 +56,4 @@ struct VerTurnoView: View {
     }
 }
 
-#Preview { VerTurnoView(usuario: .constant("Usuario"), loggedIn: .constant(true)) }
+#Preview { VerTurnoView(usuario: .constant("Usuario Demo"), loggedIn: .constant(true)) }
