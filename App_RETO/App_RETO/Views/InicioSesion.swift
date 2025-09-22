@@ -10,30 +10,26 @@ import SwiftUI
 struct InicioSesion: View {
     @Binding var usuario: String
     @Binding var loggedIn: Bool
-
     @State private var contrasena = ""
     @State private var showAlert = false
-    
-    
+
     var body: some View {
         VStack(spacing: 10) {
-            VStack {
-                Image("LogoTurnoMed")
-                    .resizable(resizingMode: .stretch)
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 215.0)
-            }
-            
+            Image("LogoTurnoMed")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 215)
+
             TextField("Usuario", text: $usuario)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .textInputAutocapitalization(.never)
                 .padding()
-            
+
             SecureField("Contraseña", text: $contrasena)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .textInputAutocapitalization(.never)
                 .padding(.horizontal)
-            
+
             Button("Iniciar Sesión") {
                 if BasedeDatos.info.contains(where: { $0.nombre == usuario && $0.clave == contrasena }) {
                     loggedIn = true
@@ -41,27 +37,19 @@ struct InicioSesion: View {
                     showAlert = true
                 }
             }
-
             .bold()
             .padding(.vertical, 18)
             .padding(.horizontal, 30)
-            .background(Color.ColorBoton)
+            .background(Color.marca)
             .foregroundColor(.white)
             .cornerRadius(12)
             .padding(.top)
-            
         }
         .padding()
         .alert(isPresented: $showAlert) {
-            Alert(
-                title: Text("Error"),
-                message: Text("Usuario o contraseña incorrectos."),
-                dismissButton: .default(Text("OK"))
-            )
+            Alert(title: Text("Error"), message: Text("Usuario o contraseña incorrectos."), dismissButton: .default(Text("OK")))
         }
     }
 }
 
-#Preview {
-    InicioSesion(usuario:.constant("") , loggedIn: .constant(false))
-}
+#Preview { InicioSesion(usuario: .constant(""), loggedIn: .constant(false)) }

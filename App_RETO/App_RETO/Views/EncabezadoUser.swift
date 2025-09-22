@@ -4,12 +4,10 @@
 //
 //  Created by Alumno on 29/08/25.
 //
-
 import SwiftUI
 
 struct EncabezadoUser: View {
     let usuario: String
-
     var body: some View {
         Text("Hola, \(usuario)")
             .font(.largeTitle.weight(.bold))
@@ -20,6 +18,4 @@ struct EncabezadoUser: View {
     }
 }
 
-#Preview {
-    EncabezadoUser(usuario: "marcoramos")
-}
+#Preview { EncabezadoUser(usuario: "marcoramos") }
