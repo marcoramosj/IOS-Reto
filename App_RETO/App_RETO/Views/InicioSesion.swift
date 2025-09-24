@@ -30,20 +30,14 @@ struct InicioSesion: View {
                 .textInputAutocapitalization(.never)
                 .padding(.horizontal)
 
-            Button("Iniciar Sesión") {
+            BotonPrincipal(title: "Iniciar Sesión", action: {
                 if BasedeDatos.info.contains(where: { $0.nombre == usuario && $0.clave == contrasena }) {
-                    loggedIn = true
-                } else {
-                    showAlert = true
-                }
-            }
-            .bold()
-            .padding(.vertical, 18)
-            .padding(.horizontal, 30)
-            .background(Color.marca)
-            .foregroundColor(.white)
-            .cornerRadius(12)
-            .padding(.top)
+                loggedIn = true
+            } else {
+                showAlert = true
+            }}).padding(.vertical, 18)
+                .padding(.horizontal, 30)
+            
         }
         .padding()
         .alert(isPresented: $showAlert) {

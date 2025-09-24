@@ -45,24 +45,13 @@ struct DashboardUserView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 28))
                         .shadow(color: .black.opacity(0.15), radius: 16, x: 0, y: 8)
 
-                        // métricas
-                        HStack(spacing: 20) {
-                            StatPill(icon: "clock.badge.checkmark", title: "Próximo", value: "Hoy")
-                            StatPill(icon: "number", title: "Número", value: "02")
-                            StatPill(icon: "rectangle.3.group", title: "Ventanilla", value: "3")
-                        }
-
+                        
                         // botones
                         VStack(spacing: 18) {
-                            Button("Cancelar turno") { alerta = true }
-                                .buttonStyle(PrimaryWideButtonStyle(fill: .marca))
-
-                            NavigationLink {
-                                TurnoView(usuario: $usuario, loggedIn: $loggedIn)
-                            } label: {
-                                Text("Pedir turno")
-                            }
-                            .buttonStyle(PrimaryWideButtonStyle(fill: .marca))
+                            BotonPrincipal(title: "Cancelar turno", action: {alerta = true})
+                            
+                            BotonPantallas(title: "Pedir Turno", pantalla: TurnoView(usuario: $usuario, loggedIn: $loggedIn), color: .marca)
+                            
                         }
                     }
                     .padding(.horizontal, 24)
@@ -85,47 +74,8 @@ struct DashboardUserView: View {
     }
 }
 
-struct StatPill: View {
-    var icon: String
-    var title: String
-    var value: String
-
-    var body: some View {
-        VStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundStyle(Color.acento)
-
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8) // achica si no cabe
-
-            Text(value)
-                .font(.title2.weight(.bold))
-                .foregroundStyle(Color.textPrimary)
-        }
-        .frame(maxWidth: .infinity, minHeight: 100)
-        .padding()
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-    }
-}
 
 
-struct PrimaryWideButtonStyle: ButtonStyle {
-    var fill: Color
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.title3.weight(.bold))
-            .frame(maxWidth: .infinity, minHeight: 60)
-            .background(fill)
-            .foregroundStyle(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
-            .opacity(configuration.isPressed ? 0.85 : 1)
-    }
-}
 
 #Preview {
     DashboardUserView(usuario: .constant("marcoramos"), loggedIn: .constant(true))

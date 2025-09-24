@@ -15,6 +15,18 @@ struct TurnoView: View {
     @State private var idReceta = ""
     @State private var comentario = ""
     @State private var mostrarDatePicker = false
+    var usuarioID: String {
+            if let u = BasedeDatos.info.first(where: { $0.nombre == usuario }) {
+                return u.id
+            }
+            return "ID no encontrado"
+        }
+    var recetaID: String {
+            if let datos = BasedeDatos.usuarioR.first(where: { ($0[0] as? String) == usuarioID }) {
+                return datos[2] as? String ?? "RID no encontrado"
+            }
+            return "RID no encontrado"
+        }
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -23,42 +35,43 @@ struct TurnoView: View {
                 ScrollView {
                     VStack(spacing: 18) {
                         TurnoProfileImage(size: 120).padding(.top, 16)
-                        Text(usuario).font(.title3).bold().foregroundStyle(.orange)
+                        Text(usuario).font(.title).bold()
+                            .foregroundStyle(.orange)
+                            .padding(.bottom,20)
 
-                        sectionLabel("Escoge un hora").foregroundStyle(.gray)
+                        sectionLabel("Escoge un hora")
 
                         HStack {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Hora").font(.headline).foregroundStyle(.orange)
-                                Text(hora, style: .time).foregroundColor(.orange).font(.system(size: 20, weight: .bold))
+                            VStack(alignment: .center, spacing: 6) {
+                                sectionLabel("Hora")
+                                DatePicker(
+                                    "",
+                                    selection: $hora,
+                                    displayedComponents: .hourAndMinute
+                                )
+                                .datePickerStyle(.compact)
+                                .labelsHidden()
+                                .scaleEffect(1.4)
                             }
                             Spacer()
-                            Button {
-                                mostrarDatePicker = true
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "calendar").font(.title3).foregroundStyle(.orange)
-                                    Image(systemName: "chevron.right").foregroundStyle(.gray)
-                                }
-                            }
+                            
                         }
+                        .padding(.bottom,20)
 
-                        sectionLabel(usuario).foregroundStyle(.gray)
-                        TextField("Número", text: $numeroReceta).textFieldStyle(.roundedBorder)
-
+                        sectionLabel(usuario)
+                        Text(usuarioID).font(.title3).padding(.bottom,20)
                         sectionLabel("ID de receta").foregroundStyle(.gray)
-                        TextField("ID", text: $idReceta).textFieldStyle(.roundedBorder)
+                        Text(recetaID).font(.title3).padding(.bottom,80)
 
-                        sectionLabel("Comentarios extra").foregroundStyle(.gray)
-                        TextField("Comentario", text: $comentario, axis: .vertical)
-                            .lineLimit(3, reservesSpace: true)
-                            .textFieldStyle(.roundedBorder)
+                        
 
-                        HStack(spacing: 35) {
-                            BotonSecundario(title: "Cancelar") { dismiss() }.tint(Color.marca)
+                        HStack(spacing: 25) {
+                            BotonPantallasSecundario(title: "Cancelar", pantalla: VerTurnoView(usuario: $usuario, loggedIn: $loggedIn), color: .marca)
+                                
                             BotonPantallasSecundario(title: "Agendar", pantalla: VerTurnoView(usuario: $usuario, loggedIn: $loggedIn), color: .marca)
                         }
                         .padding(.bottom, 8)
+                        
                     }
                     .padding(20)
                 }

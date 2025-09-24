@@ -63,6 +63,7 @@ struct BotonPrincipal: View {
                 .frame(maxWidth: .infinity, minHeight: 40)
         }
         .buttonStyle(.borderedProminent)
+        .tint(Color.marca)
     }
 }
 
@@ -73,7 +74,7 @@ struct BotonSecundario: View {
         Button(action: action) {
             HStack { Text(title).font(.system(size: 18, weight: .medium)) }
                 .padding(.horizontal, 10)
-                .frame(maxWidth: 100, minHeight: 50)
+                .frame(maxWidth: 150, minHeight: 50)
         }
         .buttonStyle(.borderedProminent)
     }
@@ -100,9 +101,9 @@ struct BotonPantallasSecundario<Destino: View>: View {
     var color: Color
     var body: some View {
         NavigationLink(destination: pantalla) {
-            HStack { Text(title).font(.system(size: 18, weight: .medium)) }
+            HStack { Text(title).font(.system(size: 27, weight: .bold)) }
                 .padding(.horizontal, 10)
-                .frame(maxWidth: 100, minHeight: 50)
+                .frame(maxWidth: 150, minHeight: 50)
         }
         .buttonStyle(.borderedProminent)
         .tint(color)
@@ -132,8 +133,8 @@ struct AppointmentCard: View {
 
 func sectionLabel(_ text: String) -> some View {
     Text(text.uppercased())
-        .font(.caption).bold()
-        .foregroundStyle(Color.acento)
+        .font(.subheadline).bold()
+        .foregroundStyle(Color.panel)
         .frame(maxWidth: .infinity, alignment: .leading)
 }
 
