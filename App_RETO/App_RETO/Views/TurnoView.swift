@@ -15,85 +15,82 @@ struct TurnoView: View {
     @State private var idReceta = ""
     @State private var comentario = ""
     @State private var mostrarDatePicker = false
+    @EnvironmentObject var router: Router
+
     var usuarioID: String {
-            if let u = BasedeDatos.info.first(where: { $0.nombre == usuario }) {
-                return u.id
-            }
-            return "ID no encontrado"
-        }
+        if let u = BasedeDatos.info.first(where: { $0.nombre == usuario }) { return u.id }
+        return "ID no encontrado"
+    }
     var recetaID: String {
-            if let datos = BasedeDatos.usuarioR.first(where: { ($0[0] as? String) == usuarioID }) {
-                return datos[2] as? String ?? "RID no encontrado"
-            }
-            return "RID no encontrado"
-        }
-    @Environment(\.dismiss) var dismiss
+        if let datos = BasedeDatos.usuarioR.first(where: { ($0[0] as? String) == usuarioID }) { return datos[2] as? String ?? "RID no encontrado" }
+        return "RID no encontrado"
+    }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 12) {
-                ScrollView {
-                    VStack(spacing: 18) {
-                        TurnoProfileImage(size: 120).padding(.top, 16)
-                        Text(usuario).font(.title).bold()
-                            .foregroundStyle(.orange)
-                            .padding(.bottom,20)
+        VStack(spacing: 12) {
+            ScrollView {
+                VStack(spacing: 18) {
+                    TurnoProfileImage(size: 120).padding(.top, 16)
+                    Text(usuario).font(.title).bold().foregroundStyle(.orange).padding(.bottom,20)
 
-                        sectionLabel("Escoge un hora")
+                    sectionLabel("Escoge un hora")
 
-                        HStack {
-                            VStack(alignment: .center, spacing: 6) {
-                                sectionLabel("Hora")
-                                DatePicker(
-                                    "",
-                                    selection: $hora,
-                                    displayedComponents: .hourAndMinute
-                                )
+                    HStack {
+                        VStack(alignment: .center, spacing: 6) {
+                            sectionLabel("Hora")
+                            DatePicker("", selection: $hora, displayedComponents: .hourAndMinute)
                                 .datePickerStyle(.compact)
                                 .labelsHidden()
                                 .scaleEffect(1.4)
-                            }
-                            Spacer()
-                            
                         }
-                        .padding(.bottom,20)
-
-                        sectionLabel(usuario)
-                        Text(usuarioID).font(.title3).padding(.bottom,20)
-                        sectionLabel("ID de receta").foregroundStyle(.gray)
-                        Text(recetaID).font(.title3).padding(.bottom,80)
-
-                        
-
-                        HStack(spacing: 25) {
-                            BotonPantallasSecundario(title: "Cancelar", pantalla: VerTurnoView(usuario: $usuario, loggedIn: $loggedIn), color: .marca)
-                                
-                            BotonPantallasSecundario(title: "Agendar", pantalla: VerTurnoView(usuario: $usuario, loggedIn: $loggedIn), color: .marca)
-                        }
-                        .padding(.bottom, 8)
-                        
+                        Spacer()
                     }
-                    .padding(20)
+                    .padding(.bottom,20)
+
+                    sectionLabel(usuario)
+                    Text(usuarioID).font(.title3).padding(.bottom,20)
+                    sectionLabel("ID de receta").foregroundStyle(.gray)
+                    Text(recetaID).font(.title3).padding(.bottom,80)
+
+                    HStack(spacing: 25) {
+                        BotonPrincipal(title: "Cancelar") {
+                            router.selected = .ver
+                            router.popToRoot(.ver)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(Color.marca)
+                        .frame(maxWidth: .infinity, minHeight: 56)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+
+                        BotonPrincipal(title: "Agendar") {
+                            router.selected = .ver
+                            router.popToRoot(.ver)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Color.marca)
+                        .frame(maxWidth: .infinity, minHeight: 56)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                    .padding(.bottom, 8)
                 }
+                .padding(20)
             }
-            .ignoresSafeArea(edges: .bottom)
-            .background(Color.white)
-            .sheet(isPresented: $mostrarDatePicker) {
-                VStack {
-                    Text("Selecciona la hora").font(.headline).padding()
-                    DatePicker("", selection: $hora, displayedComponents: .hourAndMinute)
-                        .datePickerStyle(.wheel)
-                        .labelsHidden()
-                        .padding()
-                    Button("Aceptar") { mostrarDatePicker = false }.padding()
-                }
-                .presentationDetents([.fraction(0.35)])
-            }
-            .navigationTitle("Agendar turno")
-            .navigationBarTitleDisplayMode(.inline)
         }
+        .ignoresSafeArea(edges: .bottom)
+        .background(Color.white)
+        .sheet(isPresented: $mostrarDatePicker) {
+            VStack {
+                Text("Selecciona la hora").font(.headline).padding()
+                DatePicker("", selection: $hora, displayedComponents: .hourAndMinute)
+                    .datePickerStyle(.wheel)
+                    .labelsHidden()
+                    .padding()
+                Button("Aceptar") { mostrarDatePicker = false }.padding()
+            }
+            .presentationDetents([.fraction(0.35)])
+        }
+        .navigationTitle("Agendar turno")
+        .navigationBarTitleDisplayMode(.inline)
         .navBarStyleGray()
     }
 }
-
-#Preview { TurnoView(usuario: .constant("Usuario"), loggedIn: .constant(true)) }

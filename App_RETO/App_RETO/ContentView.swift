@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var router: Router
     @State private var usuario = ""
     @State private var loggedIn = false
 

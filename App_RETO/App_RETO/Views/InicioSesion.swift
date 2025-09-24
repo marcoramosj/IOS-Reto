@@ -12,6 +12,7 @@ struct InicioSesion: View {
     @Binding var loggedIn: Bool
     @State private var contrasena = ""
     @State private var showAlert = false
+    @EnvironmentObject var router: Router
 
     var body: some View {
         VStack(spacing: 10) {
@@ -30,14 +31,17 @@ struct InicioSesion: View {
                 .textInputAutocapitalization(.never)
                 .padding(.horizontal)
 
-            BotonPrincipal(title: "Iniciar Sesión", action: {
+            BotonPrincipal(title: "Iniciar Sesión") {
                 if BasedeDatos.info.contains(where: { $0.nombre == usuario && $0.clave == contrasena }) {
-                loggedIn = true
-            } else {
-                showAlert = true
-            }}).padding(.vertical, 18)
-                .padding(.horizontal, 30)
-            
+                    loggedIn = true
+                    router.selected = .dashboard
+                    router.popToRoot(.dashboard)
+                } else {
+                    showAlert = true
+                }
+            }
+            .padding(.vertical, 18)
+            .padding(.horizontal, 30)
         }
         .padding()
         .alert(isPresented: $showAlert) {
@@ -45,5 +49,3 @@ struct InicioSesion: View {
         }
     }
 }
-
-#Preview { InicioSesion(usuario: .constant(""), loggedIn: .constant(false)) }
