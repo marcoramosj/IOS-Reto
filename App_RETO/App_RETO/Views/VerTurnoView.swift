@@ -27,11 +27,11 @@ struct VerTurnoView: View {
                         .monospacedDigit()
                         .foregroundStyle(.orange)
 
-                    Spacer(minLength: 16)
+                    Spacer(minLength: 2)
 
                     Button {
-                        router.selected = .turno
-                        router.popToRoot(.turno)
+                        router.selected = .dashboard
+                        router.popToRoot(.dashboard)
                     } label: {
                         Text("Salir")
                             .font(.title2.weight(.bold))
@@ -40,8 +40,9 @@ struct VerTurnoView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(Color.marca)
                     .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 24)
+                    .padding(EdgeInsets(top: 0, leading: 40, bottom: 54, trailing: 40))
+
+                   
                 }
                 .padding(24)
             }
@@ -51,4 +52,19 @@ struct VerTurnoView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navBarStyleGray()
     }
+}
+
+#Preview {
+    struct PreviewContainer: View {
+        @State private var mockUser = "John Doe"
+        @State private var mockLoggedIn = true
+        @StateObject private var router = Router() // Assuming Router is an ObservableObject
+
+        var body: some View {
+            VerTurnoView(usuario: $mockUser, loggedIn: $mockLoggedIn)
+        }
+    }
+
+    // You need to return the container to display the preview
+    return PreviewContainer()
 }

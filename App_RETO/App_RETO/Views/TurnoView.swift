@@ -50,12 +50,12 @@ struct TurnoView: View {
                     sectionLabel(usuario)
                     Text(usuarioID).font(.title3).padding(.bottom,20)
                     sectionLabel("ID de receta").foregroundStyle(.gray)
-                    Text(recetaID).font(.title3).padding(.bottom,80)
+                    Text(recetaID).font(.title3).padding(.bottom,40)
 
                     HStack(spacing: 25) {
                         BotonPrincipal(title: "Cancelar") {
-                            router.selected = .ver
-                            router.popToRoot(.ver)
+                            router.selected = .dashboard
+                            router.popToRoot(.dashboard)
                         }
                         .buttonStyle(.bordered)
                         .tint(Color.marca)
@@ -71,10 +71,12 @@ struct TurnoView: View {
                         .frame(maxWidth: .infinity, minHeight: 56)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
-                    .padding(.bottom, 8)
+                    
+                    Spacer()
                 }
                 .padding(20)
             }
+            
         }
         .ignoresSafeArea(edges: .bottom)
         .background(Color.white)
@@ -94,3 +96,9 @@ struct TurnoView: View {
         .navBarStyleGray()
     }
 }
+
+#Preview {
+    TurnoView(usuario: .constant("Marco"), loggedIn: .constant(true))
+        .environmentObject(Router()) // si Router es necesario en la vista
+}
+

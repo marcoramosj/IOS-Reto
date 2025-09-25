@@ -1,10 +1,10 @@
 import SwiftUI
 import UIKit
-import Foundation
+import Charts
 
 struct AppTheme {
     static let corner: CGFloat = 18
-    static let padding: CGFloat = 16
+    static let padding: CGFloat = 20
     static let spacing: CGFloat = 12
 }
 
@@ -15,20 +15,6 @@ extension Color {
     static var tabGray: Color { Color(UIColor.systemGray5) }
     static var headerGray: Color { Color(UIColor.systemGray5) }
     static var textPrimary: Color { Color(UIColor.label) }
-}
-
-struct Usuario {
-    var nombre: String
-    var clave: String
-    var id: String
-}
-
-struct BasedeDatos {
-    static let emp1 = Usuario(nombre: "marcoramos", clave: "1234", id: "ID0001")
-    static let emp2 = Usuario(nombre: "pedrosola", clave: "1234", id: "ID0035")
-    static let emp3 = Usuario(nombre: "nachoperez", clave: "1234", id: "ID0801")
-    static let info = [emp1, emp2, emp3]
-    static var usuarioR = [["ID0001", 6, "RID0001"], ["ID0035", 3, "RID0035"], ["ID0801", 4, "RID0801"]]
 }
 
 struct StatCard: View {
@@ -154,37 +140,6 @@ struct TurnoProfileImage: View {
     }
 }
 
-struct Cita: Identifiable, Codable, Hashable {
-    let id: UUID
-    let paciente: String
-    let fecha: Date
-    let especialidad: String
-    let notas: String
-    init(id: UUID = UUID(), paciente: String, fecha: Date, especialidad: String, notas: String) {
-        self.id = id; self.paciente = paciente; self.fecha = fecha; self.especialidad = especialidad; self.notas = notas
-    }
-}
-
-final class AppState: ObservableObject {
-    @Published var citas: [Cita] = [] { didSet { save() } }
-    @Published var selectedTab: Int = 0
-    init() { citas = Self.load() }
-    func agregar(_ cita: Cita) { citas.append(cita) }
-    func proxima() -> Cita? { citas.sorted { $0.fecha < $1.fecha }.first }
-    func cancelarProxima() {
-        guard let p = proxima(), let idx = citas.firstIndex(of: p) else { return }
-        citas.remove(at: idx)
-    }
-    private func save() {
-        if let data = try? JSONEncoder().encode(citas) { UserDefaults.standard.set(data, forKey: "citas") }
-    }
-    private static func load() -> [Cita] {
-        guard let data = UserDefaults.standard.data(forKey: "citas"),
-              let items = try? JSONDecoder().decode([Cita].self, from: data) else { return [] }
-        return items
-    }
-}
-
 struct TabBarConfigurator: UIViewControllerRepresentable {
     var selected: UIColor
     var unselected: UIColor
@@ -229,3 +184,68 @@ extension View {
         background(NavBarConfigurator(background: UIColor(Color.headerGray), title: UIColor(Color.textPrimary)))
     }
 }
+
+struct TurnosChartView: View {
+    let turnos: [TurnoHora]
+    let selectedDay: Date
+    let accessibleHour: (startHour: Int, endHour: Int, count: Int)?
+    
+    // Formatea la fecha para el título
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: selectedDay)
+    }
+    
+    // Ayuda a determinar si la barra actual es parte del rango de horas más accesible
+    private func isAccessible(hour: Int) -> Bool {
+        guard let range = accessibleHour else { return false }
+        return hour >= range.startHour && hour <= range.endHour
+    }
+    
+    var body: some View {
+        VStack {
+            Text("Turnos por hora (\(formattedDate))")
+                .font(.title2)
+                .bold()
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                Chart {
+                    ForEach(groupedByHour, id: \.hour) { item in
+                        BarMark(
+                            x: .value("Hora", "\(item.hour):00"),
+                            y: .value("Cantidad", item.count)
+                        )
+                        .foregroundStyle(isAccessible(hour: item.hour) ? Color.acento.gradient : Color.marca.gradient)
+                    }
+                    if let hourInfo = accessibleHour {
+                        RuleMark(x: .value("Hora", "\(hourInfo.startHour):00"))
+                            .lineStyle(StrokeStyle(lineWidth: 2, dash: [5]))
+                            .foregroundStyle(Color.acento)
+                            .annotation(position: .overlay, alignment: .top, spacing: 10) {
+                                Text("Más accesible")
+                                    .font(.caption).bold()
+                                    .foregroundStyle(Color.acento)
+                                    .offset(y: -10)
+                            }
+                    }
+                }
+                .frame(width: 24 * 50, height: 200)
+            }
+            .padding()
+        }
+    }
+}
+
+struct EncabezadoUser: View {
+    let usuario: String
+    var body: some View {
+        Text("Hola, \(usuario)")
+            .font(.largeTitle.weight(.bold))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .accessibilityAddTraits(.isHeader)
+    }
+}
+
