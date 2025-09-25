@@ -55,30 +55,39 @@ struct DashboardUserView: View {
 
                     // botones
                     VStack(spacing: 18) {
-                        BotonPrincipal(title: "Cancelar turno") {
-                            activeAlert = .cancelar
-                        }
-
                         BotonPrincipal(title: "Pedir Turno") {
                             router.selected = .turno
                             router.popToRoot(.turno)
                         }
-                        BotonPrincipal(title: "Hora Pico") {
+                        BotonPrincipal(title: "Ver Hora Pico") {
                             router.selected = .hora
                             router.popToRoot(.hora)
-                        }.padding(.bottom, 7)
-                        Button(action: {
-                            activeAlert = .salir
-                        }) {
-                            Text("Cerrar sesión")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                                .padding(10)
-                                .clipShape(Capsule())
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Color.marca)
+                        Button(action:
+                                {activeAlert = .cancelar}) {
+                            HStack { Text("Cancelar Turno").font(.system(size: 24, weight: .bold)) }
+                                .padding(.horizontal, 16)
+                                .frame(maxWidth: .infinity, minHeight: 40)
+                        }
+                                .buttonStyle(.bordered) // solo borde
+                                .controlSize(.large)    // hace el botón más grande
+                                .tint(Color.marca)      // color del borde y relleno de la figura
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                        
+                        HStack(){
+                            Spacer()
+                            Button(action: {
+                                activeAlert = .salir
+                            }) {
+                                Image(systemName: "rectangle.portrait.and.arrow.forward.fill")
+                                    .font(.system(size: 32, weight: .bold)) // tamaño del ícono
+                            }
+                            .buttonStyle(.bordered) // solo borde
+                            .controlSize(.large)    // hace el botón más grande
+                            .tint(Color.marca)      // color del borde y relleno de la figura
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
                     }
                     Spacer()
 

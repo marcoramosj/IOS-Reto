@@ -66,6 +66,21 @@ struct BotonSecundario: View {
     }
 }
 
+struct BotonSalida: View {
+    var title: String
+    var action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            HStack { Text(title).font(.system(size: 18, weight: .medium)) }
+                .buttonStyle(.bordered) // solo borde
+                .controlSize(.large)    // hace el botón más grande
+                .tint(Color.marca)      // color del borde y relleno de la figura
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.borderedProminent)
+    }
+}
+
 struct BotonPantallas<Destino: View>: View {
     var title: String
     var pantalla: Destino
