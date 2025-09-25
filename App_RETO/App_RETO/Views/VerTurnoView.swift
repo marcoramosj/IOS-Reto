@@ -56,7 +56,7 @@ struct VerTurnoView: View {
 
 #Preview {
     struct PreviewContainer: View {
-        @State private var mockUser = "John Doe"
+        @State private var mockUser = "Jane Doe"
         @State private var mockLoggedIn = true
         @StateObject private var router = Router() // Assuming Router is an ObservableObject
 

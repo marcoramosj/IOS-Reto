@@ -99,6 +99,6 @@ struct TurnoView: View {
 
 #Preview {
     TurnoView(usuario: .constant("Marco"), loggedIn: .constant(true))
-        .environmentObject(Router()) // si Router es necesario en la vista
+        .environmentObject(Router())
 }
 

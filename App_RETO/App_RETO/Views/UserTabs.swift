@@ -38,9 +38,17 @@ struct UserTabs: View {
             .tabItem { Label("Hora Pico", systemImage: "clock.arrow.trianglehead.2.counterclockwise.rotate.90") }
             .tag(TabID.hora)
         }
-        
+        .onAppear {
+            let appearance = UITabBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = UIColor(named: "tabGray") ?? UIColor.systemGray6
+            
+            UITabBar.appearance().standardAppearance = appearance
+            UITabBar.appearance().scrollEdgeAppearance = appearance
+        }
     }
 }
+   
 
 
 struct UserTabs_Previews: PreviewProvider {
