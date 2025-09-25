@@ -65,7 +65,7 @@ struct HoraPicoView: View {
             VStack(spacing: AppTheme.spacing) {
                 
                 // Título de la vista
-                Text("Hora Pico")
+                Text("Horas Accesibles")
                     .font(.largeTitle)
                     .bold()
                     .padding(.top, AppTheme.padding)
@@ -100,6 +100,7 @@ struct HoraPicoView: View {
                 
                 Spacer()
             }
+            .navigationTitle("Hora Pico")
             .navigationBarTitleDisplayMode(.inline)
             .navBarStyleGray()
         }
