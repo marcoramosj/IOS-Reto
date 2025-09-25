@@ -29,22 +29,15 @@ struct VerTurnoView: View {
 
                     Spacer(minLength: 2)
 
-                    Button {
+                    BotonPrincipal(title: "Regresar") {
                         router.selected = .dashboard
                         router.popToRoot(.dashboard)
-                    } label: {
-                        Text("Salir")
-                            .font(.title2.weight(.bold))
-                            .frame(maxWidth: .infinity, minHeight: 70)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color.marca)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .padding(EdgeInsets(top: 0, leading: 40, bottom: 54, trailing: 40))
+                    
 
                    
                 }
-                .padding(24)
+                .padding(AppTheme.padding)
             }
         }
         .background(Color.white)

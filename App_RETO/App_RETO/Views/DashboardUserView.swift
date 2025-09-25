@@ -70,7 +70,6 @@ struct DashboardUserView: View {
                                 .frame(maxWidth: .infinity, minHeight: 40)
                         }
                                 .buttonStyle(.bordered) // solo borde
-                                .controlSize(.large)    // hace el botón más grande
                                 .tint(Color.marca)      // color del borde y relleno de la figura
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
@@ -95,7 +94,7 @@ struct DashboardUserView: View {
                 .padding(.horizontal, 24)
 
                 Spacer()
-            }
+            }.background(Color.white)
         }
         .navigationTitle("Inicio")
         .navigationBarTitleDisplayMode(.inline)

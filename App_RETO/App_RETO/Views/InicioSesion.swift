@@ -17,7 +17,7 @@ struct InicioSesion: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 10) {
-                Image("LogoTurnoMed")
+                Image("LogoNova2")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 215)
@@ -45,16 +45,7 @@ struct InicioSesion: View {
                 .padding(.horizontal, 30)
             }
             .padding()
-            AsyncImage(url: URL(string: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTl1y9z7yJ6BIFLSNMZyGCPzR1QlIGHjncBYg&s")) { image in
-                            image
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 60) // tamaño pequeño
-                                .padding()
-                        } placeholder: {
-                            ProgressView()
-                        }
-                    }
+            }
                     .alert(isPresented: $showAlert) {
                         Alert(title: Text("Error"), message: Text("Usuario o contraseña incorrectos."), dismissButton: .default(Text("OK")))
                     }

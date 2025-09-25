@@ -53,14 +53,20 @@ struct TurnoView: View {
                     Text(recetaID).font(.title3).padding(.bottom,40)
 
                     HStack(spacing: 25) {
-                        BotonPrincipal(title: "Cancelar") {
+                        Button(action:
+                                {
                             router.selected = .dashboard
                             router.popToRoot(.dashboard)
+                                }) {
+                            HStack { Text("Cancelar").font(.system(size: 24, weight: .bold)) }
+                                        .padding(.horizontal, 16)
+                                        .frame(maxWidth: .infinity, minHeight: 40)
                         }
-                        .buttonStyle(.bordered)
-                        .tint(Color.marca)
-                        .frame(maxWidth: .infinity, minHeight: 56)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                                .frame(maxWidth: .infinity, minHeight: 56)
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                                .buttonStyle(.bordered) // solo borde
+                                .tint(Color.marca)      // color del borde y relleno de la figura
+                
 
                         BotonPrincipal(title: "Agendar") {
                             router.selected = .ver

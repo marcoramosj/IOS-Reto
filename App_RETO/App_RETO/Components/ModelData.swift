@@ -65,21 +65,21 @@ struct TurnoHora: Identifiable {
 }
 
 let turnoHoraMock: [TurnoHora] = [
-    TurnoHora(id: 1, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T08:15:00Z")!, prescriptionId: "RX2001", comentario: "Random time prescription", status: 1),
-    TurnoHora(id: 2, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T11:40:00Z")!, prescriptionId: "RX2002", comentario: "Random time prescription", status: 1),
-    TurnoHora(id: 3, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T09:25:00Z")!, prescriptionId: "RX2003", comentario: "Random time prescription", status: 0),
-    TurnoHora(id: 4, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T14:50:00Z")!, prescriptionId: "RX2004", comentario: "Random time prescription", status: 1),
-    TurnoHora(id: 5, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T10:10:00Z")!, prescriptionId: "RX2005", comentario: "Random time prescription", status: 1),
-    TurnoHora(id: 6, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T16:30:00Z")!, prescriptionId: "RX2006", comentario: "Random time prescription", status: 1),
-    TurnoHora(id: 7, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T12:00:00Z")!, prescriptionId: "RX2007", comentario: nil, status: 1),
-    TurnoHora(id: 8, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T08:55:00Z")!, prescriptionId: "RX2008", comentario: "Random time prescription", status: 1),
-    TurnoHora(id: 9, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T17:15:00Z")!, prescriptionId: "RX2009", comentario: nil, status: 0),
-    TurnoHora(id: 10, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T13:45:00Z")!, prescriptionId: "RX2010", comentario: "Random time prescription", status: 1),
-    TurnoHora(id: 11, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T09:05:00Z")!, prescriptionId: "RX2011", comentario: "Random time prescription", status: 1),
-    TurnoHora(id: 12, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T18:20:00Z")!, prescriptionId: "RX2012", comentario: nil, status: 1),
-    TurnoHora(id: 13, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T10:50:00Z")!, prescriptionId: "RX2013", comentario: "Random time prescription", status: 1),
-    TurnoHora(id: 14, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T15:35:00Z")!, prescriptionId: "RX2014", comentario: "Random time prescription", status: 1),
-    TurnoHora(id: 15, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-24T11:00:00Z")!, prescriptionId: "RX2015", comentario: "Random time prescription", status: 1)
+    TurnoHora(id: 1, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T08:15:00Z")!, prescriptionId: "RX2001", comentario: "Random time prescription", status: 1),
+    TurnoHora(id: 2, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T11:40:00Z")!, prescriptionId: "RX2002", comentario: "Random time prescription", status: 1),
+    TurnoHora(id: 3, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T09:25:00Z")!, prescriptionId: "RX2003", comentario: "Random time prescription", status: 0),
+    TurnoHora(id: 4, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T14:50:00Z")!, prescriptionId: "RX2004", comentario: "Random time prescription", status: 1),
+    TurnoHora(id: 5, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T10:10:00Z")!, prescriptionId: "RX2005", comentario: "Random time prescription", status: 1),
+    TurnoHora(id: 6, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T16:30:00Z")!, prescriptionId: "RX2006", comentario: "Random time prescription", status: 1),
+    TurnoHora(id: 7, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T12:00:00Z")!, prescriptionId: "RX2007", comentario: nil, status: 1),
+    TurnoHora(id: 8, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T08:55:00Z")!, prescriptionId: "RX2008", comentario: "Random time prescription", status: 1),
+    TurnoHora(id: 9, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T17:15:00Z")!, prescriptionId: "RX2009", comentario: nil, status: 0),
+    TurnoHora(id: 10, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T13:45:00Z")!, prescriptionId: "RX2010", comentario: "Random time prescription", status: 1),
+    TurnoHora(id: 11, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T09:05:00Z")!, prescriptionId: "RX2011", comentario: "Random time prescription", status: 1),
+    TurnoHora(id: 12, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T18:20:00Z")!, prescriptionId: "RX2012", comentario: nil, status: 1),
+    TurnoHora(id: 13, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T10:50:00Z")!, prescriptionId: "RX2013", comentario: "Random time prescription", status: 1),
+    TurnoHora(id: 14, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T15:35:00Z")!, prescriptionId: "RX2014", comentario: "Random time prescription", status: 1),
+    TurnoHora(id: 15, scheduledDate: ISO8601DateFormatter().date(from: "2025-09-25T11:00:00Z")!, prescriptionId: "RX2015", comentario: "Random time prescription", status: 1)
 ]
 
 

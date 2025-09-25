@@ -25,7 +25,7 @@ struct StatCard: View {
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
-                Circle().fill(fill.opacity(0.18)).frame(width: 38, height: 38)
+                Circle().fill(fill.opacity(0.18)).frame(width: 28, height: 28)
                 Image(systemName: icon).foregroundStyle(fill).font(.system(size: 17, weight: .semibold))
             }
             VStack(alignment: .leading, spacing: 6) {

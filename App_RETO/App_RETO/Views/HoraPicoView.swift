@@ -6,7 +6,7 @@ struct HoraPicoView: View {
     @State private var turnos: [TurnoHora] = turnoHoraMock
     @State private var selectedDay: Date = Date()
     @EnvironmentObject var router: Router
-
+    
     
     // Propiedad calculada para encontrar la hora con menos turnos y que sea la más temprana
     private var accessibleHourRange: (startHour: Int, endHour: Int, count: Int)? {
@@ -59,50 +59,53 @@ struct HoraPicoView: View {
         
         return nil
     }
-
+    
     var body: some View {
-        NavigationView {
-            VStack(spacing: AppTheme.spacing) {
-                
-                // Título de la vista
-                Text("Horas Accesibles")
-                    .font(.largeTitle)
-                    .bold()
-                    .padding(.top, AppTheme.padding)
-                
-                Spacer()
-                
-                // Gráfica de turnos por hora
-                TurnosChartView(turnos: turnos, selectedDay: selectedDay, accessibleHour: accessibleHourRange)
-                    .background(Color.tabGray)
-                    .cornerRadius(AppTheme.corner)
-                    .padding(.horizontal, AppTheme.padding)
-                
-                
-                // Tarjeta de la hora más accesible
-                if let hourInfo = accessibleHourRange {
-                    StatCard(
-                        icon: "clock.fill",
-                        title: "Hora más accesible del día",
-                        value: "\(hourInfo.startHour):00 - \(hourInfo.endHour + 1):00",
-                        fill: Color.marca
-                    )
-                    .padding(.horizontal, AppTheme.padding)
+        VStack{
+            NavigationView {
+                VStack(spacing: AppTheme.spacing) {
+                    
+                    // Título de la vista
+                    Text("Horas Accesibles")
+                        .font(.largeTitle)
+                        .bold()
+                        .padding(.top, AppTheme.padding)
                     
                     Spacer()
                     
-                    BotonPrincipal(title: "Salir") {
-                        router.selected = .dashboard
-                        router.popToRoot(.dashboard)
+                    // Gráfica de turnos por hora
+                    TurnosChartView(turnos: turnos, selectedDay: selectedDay, accessibleHour: accessibleHourRange)
+                        .background(Color.tabGray)
+                        .cornerRadius(AppTheme.corner)
+                        .padding(.horizontal, AppTheme.padding)
+                    
+                    
+                    // Tarjeta de la hora más accesible
+                    if let hourInfo = accessibleHourRange {
+                        StatCard(
+                            icon: "clock.fill",
+                            title: "Hora más accesible del día",
+                            value: "\(hourInfo.startHour):00 - \(hourInfo.endHour + 1):00",
+                            fill: Color.marca
+                        )
+                        .padding(.horizontal, AppTheme.padding)
+                        
+                        Spacer()
+                        
+                        BotonPrincipal(title: "Regresar") {
+                            router.selected = .dashboard
+                            router.popToRoot(.dashboard)
+                        }
+                        
                     }
-                    .padding(EdgeInsets(top: 30, leading: 40, bottom: 54, trailing: 40))
+                    
+                    Spacer()
                 }
-                
-                Spacer()
+                .padding(AppTheme.padding)
+                .navigationTitle("Hora Pico")
+                .navigationBarTitleDisplayMode(.inline)
+                .navBarStyleGray()
             }
-            .navigationTitle("Hora Pico")
-            .navigationBarTitleDisplayMode(.inline)
-            .navBarStyleGray()
         }
     }
 }
