@@ -200,19 +200,37 @@ extension View {
     }
 }
 
+import SwiftUI
+import Charts
+
 struct TurnosChartView: View {
     let turnos: [TurnoHora]
     let selectedDay: Date
     let accessibleHour: (startHour: Int, endHour: Int, count: Int)?
     
-    // Formatea la fecha para el título
+    private var gmtCalendar: Calendar {
+            var cal = Calendar(identifier: .gregorian)
+            cal.timeZone = TimeZone(secondsFromGMT: 0)! 
+            return cal
+        }
+    
+    var groupedByHour: [(hour: Int, count: Int)] {
+        let filtered = turnos.filter { $0.hourStart.isSameDay(as: selectedDay) }
+        let grouped = filtered.reduce(into: [Int: Int]()) { dict, turno in
+            let hour = gmtCalendar.component(.hour, from: turno.hourStart)
+            dict[hour, default: 0] += turno.turnosCount
+        }
+        return (0..<24).map { hour in
+            (hour, grouped[hour] ?? 0)
+        }
+    }
+    
     private var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: selectedDay)
     }
     
-    // Ayuda a determinar si la barra actual es parte del rango de horas más accesible
     private func isAccessible(hour: Int) -> Bool {
         guard let range = accessibleHour else { return false }
         return hour >= range.startHour && hour <= range.endHour
@@ -221,8 +239,8 @@ struct TurnosChartView: View {
     var body: some View {
         VStack {
             Text("Turnos por hora (\(formattedDate))")
-                .font(.title2)
-                .bold()
+                .font(.title2).bold()
+                .padding(20)
             
             ScrollView(.horizontal, showsIndicators: false) {
                 Chart {
@@ -233,8 +251,9 @@ struct TurnosChartView: View {
                         )
                         .foregroundStyle(isAccessible(hour: item.hour) ? Color.acento.gradient : Color.marca.gradient)
                     }
+                    
                     if let hourInfo = accessibleHour {
-                        RuleMark(x: .value("Hora", "\(hourInfo.startHour):00"))
+                        RuleMark(x: .value("Hora", "\(hourInfo.startHour):00 GMT"))
                             .lineStyle(StrokeStyle(lineWidth: 2, dash: [5]))
                             .foregroundStyle(Color.acento)
                             .annotation(position: .overlay, alignment: .top, spacing: 10) {

@@ -12,7 +12,7 @@ struct DashboardUserView: View {
     @State private var activeAlert: ActiveAlert?
     @EnvironmentObject var router: Router
     @State private var turno: UsuarioTurnosAdelante? = nil
-        @State private var errorMessage: String? = nil
+    @State private var errorMessage: String? = nil
 
     var body: some View {
         ZStack {

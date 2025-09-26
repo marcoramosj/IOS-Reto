@@ -1,32 +1,29 @@
 import SwiftUI
 import Charts
 
-// Vista que contiene la gráfica y la tarjeta de información
 struct HoraPicoView: View {
-    @State private var turnos: [TurnoHora] = turnoHoraMock
+    @State private var turnos: [TurnoHora] = []   
     @State private var selectedDay: Date = Date()
     @EnvironmentObject var router: Router
     
-    
-    // Propiedad calculada para encontrar la hora con menos turnos y que sea la más temprana
     private var accessibleHourRange: (startHour: Int, endHour: Int, count: Int)? {
-        let groupedByHour = Dictionary(grouping: turnos.filter { $0.scheduledDate.isSameDay(as: selectedDay) }) {
-            Calendar.current.component(.hour, from: $0.scheduledDate)
+        let filtered = turnos.filter { $0.hourStart.isSameDay(as: selectedDay) }
+        
+        let grouped = filtered.reduce(into: [Int: Int]()) { dict, turno in
+            let hour = Calendar.current.component(.hour, from: turno.hourStart)
+            dict[hour, default: 0] += turno.turnosCount
         }
         
-        let allHours = 0..<24
-        let completeData = allHours.map { hour -> (hour: Int, count: Int) in
-            return (hour: hour, count: groupedByHour[hour]?.count ?? 0)
+        let completeData = (0..<24).map { hour -> (hour: Int, count: Int) in
+            (hour, grouped[hour] ?? 0)
         }
         
-        // Encuentra el conteo mínimo de turnos
         guard let minCount = completeData.min(by: { $0.count < $1.count })?.count else { return nil }
         
         var bestStartHour: Int?
         var bestEndHour: Int?
         var currentStartHour: Int?
         
-        // Itera para encontrar la secuencia de horas consecutivas con el conteo mínimo
         for i in 0..<completeData.count {
             if completeData[i].count == minCount {
                 if currentStartHour == nil {
@@ -44,7 +41,6 @@ struct HoraPicoView: View {
             }
         }
         
-        // Maneja el caso en que la secuencia mínima continúa hasta el final del día
         if let start = currentStartHour {
             let end = completeData.last!.hour
             if bestStartHour == nil || (end - start > (bestEndHour! - bestStartHour!)) {
@@ -61,11 +57,10 @@ struct HoraPicoView: View {
     }
     
     var body: some View {
-        VStack{
+        VStack {
             NavigationView {
                 VStack(spacing: AppTheme.spacing) {
                     
-                    // Título de la vista
                     Text("Horas Accesibles")
                         .font(.largeTitle)
                         .bold()
@@ -73,14 +68,17 @@ struct HoraPicoView: View {
                     
                     Spacer()
                     
-                    // Gráfica de turnos por hora
-                    TurnosChartView(turnos: turnos, selectedDay: selectedDay, accessibleHour: accessibleHourRange)
-                        .background(Color.tabGray)
-                        .cornerRadius(AppTheme.corner)
-                        .padding(.horizontal, AppTheme.padding)
                     
+                    TurnosChartView(
+                        turnos: turnos,
+                        selectedDay: selectedDay,
+                        accessibleHour: accessibleHourRange
+                    )
+                    .background(Color.tabGray)
+                    .cornerRadius(AppTheme.corner)
+                    .padding(.horizontal, AppTheme.padding)
+                    .frame(maxWidth: 700,maxHeight: 300)
                     
-                    // Tarjeta de la hora más accesible
                     if let hourInfo = accessibleHourRange {
                         StatCard(
                             icon: "clock.fill",
@@ -96,7 +94,6 @@ struct HoraPicoView: View {
                             router.selected = .dashboard
                             router.popToRoot(.dashboard)
                         }
-                        
                     }
                     
                     Spacer()
@@ -105,6 +102,13 @@ struct HoraPicoView: View {
                 .navigationTitle("Hora Pico")
                 .navigationBarTitleDisplayMode(.inline)
                 .navBarStyleGray()
+            }
+        }
+        .task {
+            do {
+                turnos = try await fetchTurnosDia()
+            } catch {
+                print("Error cargando turnos:", error)
             }
         }
     }
