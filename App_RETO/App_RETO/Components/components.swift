@@ -283,3 +283,34 @@ struct EncabezadoUser: View {
     }
 }
 
+func fechaCompletaConHoraSeleccionada(_ horaSeleccionada: Date) -> String {
+    let calendar = Calendar.current
+
+    // Obtenemos el día de hoy
+    let hoy = Date()
+    let fechaComponentes = calendar.dateComponents([.year, .month, .day], from: hoy)
+
+    // Obtenemos la hora y minuto del DatePicker
+    let horaComponentes = calendar.dateComponents([.hour, .minute], from: horaSeleccionada)
+
+    // Combinamos día + hora
+    var componentesFinales = DateComponents()
+    componentesFinales.year = fechaComponentes.year
+    componentesFinales.month = fechaComponentes.month
+    componentesFinales.day = fechaComponentes.day
+    componentesFinales.hour = horaComponentes.hour
+    componentesFinales.minute = horaComponentes.minute
+    componentesFinales.second = 0
+
+    // Convertimos a Date
+    guard let fechaFinal = calendar.date(from: componentesFinales) else {
+        return "" // O manejar un error
+    }
+
+    // Formateamos a string para la API
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+    formatter.timeZone = TimeZone.current
+
+    return formatter.string(from: fechaFinal)
+}

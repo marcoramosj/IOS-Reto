@@ -1,45 +1,49 @@
 import SwiftUI
 
 enum ActiveAlert: Identifiable {
-    case cancelar, salir
-    var id: Int {
-        hashValue }
+    case cancelar, salir, mensaje
+    var id: Int { hashValue }
 }
 
 struct DashboardUserView: View {
     @Binding var usuario: String
     @Binding var loggedIn: Bool
+    @Binding var idusuario: Int
+    
     @State private var activeAlert: ActiveAlert?
-    @EnvironmentObject var router: Router
+    @State private var turnos: [Turn] = []
     @State private var turno: UsuarioTurnosAdelante? = nil
     @State private var errorMessage: String? = nil
-
+    @State private var successMessage: String? = nil
+    @EnvironmentObject var router: Router
+    
+    var turnoId: Int? {
+        turnos.first?.IDTurno
+    }
+    
     var body: some View {
         ZStack {
             Color(UIColor.systemGray6).ignoresSafeArea()
-
+            
             VStack(spacing: 32) {
                 EncabezadoUser(usuario: usuario).padding(.top, 48)
-
+                
                 VStack(spacing: 20) {
-                    // tarjeta principal
+                    // Tarjeta principal
                     VStack(spacing: 16) {
                         Text("Tu turno")
                             .font(.title.weight(.semibold))
                             .foregroundStyle(.white.opacity(0.9))
-
-                        Text("8")
+                        
+                        Text(turnoId != nil ? "\(turnoId!)" : "-")
                             .font(.system(size: 70, weight: .heavy, design: .rounded))
                             .monospacedDigit()
                             .foregroundStyle(.white)
-
+                        
                         Text("Faltan \(turno?.turnosAhead ?? 0) turnos por delante")
                             .font(.title3.weight(.medium))
                             .foregroundStyle(.white)
-
-                        Text("Ventanilla asignada: 3")
-                            .font(.title3.weight(.bold))
-                            .foregroundStyle(.white)
+                        
                     }
                     .frame(maxWidth: .infinity)
                     .padding(32)
@@ -52,61 +56,89 @@ struct DashboardUserView: View {
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 28))
                     .shadow(color: .black.opacity(0.15), radius: 16, x: 0, y: 8)
-
-                    // botones
+                    
+                    // Botones
                     VStack(spacing: 18) {
                         BotonPrincipal(title: "Pedir Turno") {
                             router.selected = .turno
                             router.popToRoot(.turno)
                         }
+                        .disabled(turnoId != nil)
                         BotonPrincipal(title: "Ver Hora Pico") {
                             router.selected = .hora
                             router.popToRoot(.hora)
                         }
-                        Button(action:
-                                {activeAlert = .cancelar}) {
-                            HStack { Text("Cancelar Turno").font(.system(size: 24, weight: .bold)) }
-                                .padding(.horizontal, 16)
+                        Button(action: { activeAlert = .cancelar }) {
+                            Text("Cancelar Turno")
+                                .font(.system(size: 24, weight: .bold))
                                 .frame(maxWidth: .infinity, minHeight: 40)
                         }
-                                .buttonStyle(.bordered) // solo borde
-                                .tint(Color.marca)      // color del borde y relleno de la figura
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-
+                        .buttonStyle(.bordered)
+                        .tint(Color.marca)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                         
-                        HStack(){
+                        HStack {
                             Spacer()
-                            Button(action: {
-                                activeAlert = .salir
-                            }) {
+                            Button(action: { activeAlert = .salir }) {
                                 Image(systemName: "rectangle.portrait.and.arrow.forward.fill")
-                                    .font(.system(size: 32, weight: .bold)) // tamaño del ícono
+                                    .font(.system(size: 32, weight: .bold))
                             }
-                            .buttonStyle(.bordered) // solo borde
-                            .controlSize(.large)    // hace el botón más grande
-                            .tint(Color.marca)      // color del borde y relleno de la figura
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
+                            .tint(Color.marca)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
+                    
                     Spacer()
-
                 }
                 .padding(.horizontal, 24)
-
+                
                 Spacer()
-            }.background(Color.white)
+            }
+            .background(Color.white)
         }
         .navigationTitle("Inicio")
         .navigationBarTitleDisplayMode(.inline)
         .alert(item: $activeAlert) { alert in
             switch alert {
             case .cancelar:
-                return Alert(
-                    title: Text("¿Seguro?"),
-                    message: Text("¿Quieres cancelar tu turno?"),
-                    primaryButton: .destructive(Text("Continuar")) {},
-                    secondaryButton: .cancel()
-                )
+                    return Alert(
+                        title: Text("¿Seguro?"),
+                        message: Text("¿Quieres cancelar tu turno?"),
+                        primaryButton: .destructive(Text("Continuar")) {
+                            Task {
+                                do {
+                                    if let id = turnoId {
+                                        let response = try await cancelTurno(turnoescogido: id)
+                                        successMessage = response.formatted
+                                        
+                                        // Pido de nuevo los turnos actualizados
+                                        let nuevosTurnos = try await fetchUserTurns(userId: idusuario)
+                                        let nuevoTurno: UsuarioTurnosAdelante? =
+                                            if let primero = nuevosTurnos.first {
+                                                try await fetchTurnosAdelante(IddeTurnos: primero.IDTurno)
+                                            } else {
+                                                nil
+                                            }
+                                        
+                                        turnos = nuevosTurnos
+                                        turno = nuevoTurno
+                                        activeAlert = .mensaje
+                                    } else {
+                                        successMessage = "No se encontró un turno para cancelar."
+                                        activeAlert = .mensaje
+                                    }
+                                } catch {
+                                    errorMessage = "Error de conexión al servidor."
+                                    activeAlert = .mensaje
+                                    print("🔎 Nuevos turnos:", turnos)
+                                }
+                            }
+                        },
+                        secondaryButton: .cancel()
+                    )
+                
             case .salir:
                 return Alert(
                     title: Text("¿Seguro?"),
@@ -118,14 +150,35 @@ struct DashboardUserView: View {
                     },
                     secondaryButton: .cancel()
                 )
+                
+            case .mensaje:
+                return Alert(
+                    title: Text("Aviso"),
+                    message: Text(successMessage ?? errorMessage ?? "Operación completada."),
+                    dismissButton: .default(Text("OK")) {
+                        successMessage = nil
+                        errorMessage = nil
+                    }
+                )
             }
         }
         .navBarStyleGray()
+        .task {
+            do {
+                turnos = try await fetchUserTurns(userId: idusuario)
+            } catch {
+                errorMessage = "No se pudieron obtener los turnos."
+            }
+        }
     }
 }
 
-
+// MARK: - PREVIEW
 #Preview {
-    DashboardUserView(usuario: .constant("marcoramos"), loggedIn: .constant(true))
-        .environmentObject(Router())
+    DashboardUserView(
+        usuario: .constant("marcoramos"),
+        loggedIn: .constant(true),
+        idusuario: .constant(8)
+    )
+    .environmentObject(Router())
 }

@@ -11,17 +11,19 @@ struct UserTabs: View {
     @EnvironmentObject var router: Router
     @Binding var usuario: String
     @Binding var loggedIn: Bool
+    @Binding var idusuario: Int
+
 
     var body: some View {
         TabView(selection: $router.selected) {
             NavigationStack(path: $router.pathDashboard) {
-                DashboardUserView(usuario: $usuario, loggedIn: $loggedIn)
+                DashboardUserView(usuario: $usuario, loggedIn: $loggedIn,idusuario:$idusuario)
             }
             .tabItem { Label("Dashboard", systemImage: "house.fill") }
             .tag(TabID.dashboard)
 
             NavigationStack(path: $router.pathTurno) {
-                TurnoView(usuario: $usuario, loggedIn: $loggedIn)
+                TurnoView(usuario: $usuario, loggedIn: $loggedIn, idusuario: $idusuario)
             }
             .tabItem { Label("Turno", systemImage: "calendar.badge.plus") }
             .tag(TabID.turno)
@@ -54,12 +56,15 @@ struct UserTabs: View {
 struct UserTabs_Previews: PreviewProvider {
     @State static var testUsuario = "UsuarioPrueba"
     @State static var testLoggedIn = true
+    @State static var testUsuarioId = 0
+
     @StateObject static var testRouter = Router()
 
     static var previews: some View {
         UserTabs(
             usuario: $testUsuario,
-            loggedIn: $testLoggedIn
+            loggedIn: $testLoggedIn,
+            idusuario: $testUsuarioId
         )
         .environmentObject(testRouter)
     }

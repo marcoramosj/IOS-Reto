@@ -35,7 +35,7 @@ struct UsuarioTurnosAdelante: Codable {
 
 
 func fetchTurnosAdelante(IddeTurnos:Int) async throws -> UsuarioTurnosAdelante {
-    guard let url = URL(string: "los-cinco-informaticos.tc2007b.tec.mx:10206/turnos/ahead/\(IddeTurnos)") else {
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/turnos/ahead/\(IddeTurnos)") else {
         throw URLError(.badURL)
     }
     
@@ -45,14 +45,6 @@ func fetchTurnosAdelante(IddeTurnos:Int) async throws -> UsuarioTurnosAdelante {
     let response = try decoder.decode(UsuarioTurnosAdelante.self, from: data)
     
     return response
-}
-
-struct BasedeDatos {
-    static let emp1 = Usuario(nombre: "marcoramos", clave: "1234", id: "ID0001")
-    static let emp2 = Usuario(nombre: "pedrosola", clave: "1234", id: "ID0035")
-    static let emp3 = Usuario(nombre: "nachoperez", clave: "1234", id: "ID0801")
-    static let info = [emp1, emp2, emp3]
-    static var usuarioR = [["ID0001", 6, "RID0001"], ["ID0035", 3, "RID0035"], ["ID0801", 4, "RID0801"]]
 }
 
 struct Cita: Identifiable, Codable, Hashable {
@@ -120,5 +112,143 @@ func fetchTurnosDia() async throws -> [TurnoHora] {
     decoder.dateDecodingStrategy = .formatted(rfc1123Formatter)
     return try decoder.decode([TurnoHora].self, from: data)
 }
+
+struct AccesoUsuario: Codable, Identifiable {
+    let id = UUID()
+    let nombre: String
+    let password: String
+    let iduser :Int
+
+    enum CodingKeys: String, CodingKey {
+        case nombre = "Username"
+        case password = "Password"
+        case iduser = "Id"
+    }
+}
+
+
+func fetchUsuarios() async throws -> [AccesoUsuario] {
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/user/access") else {
+        throw URLError(.badURL)
+    }
+    
+    let (data, response) = try await URLSession.shared.data(from: url)
+    
+    guard let httpResponse = response as? HTTPURLResponse,
+          200..<300 ~= httpResponse.statusCode else {
+        throw URLError(.badServerResponse)
+    }
+    
+    let decoder = JSONDecoder()
+    return try decoder.decode([AccesoUsuario].self, from: data)
+}
+
+
+struct CancelResponse: Codable {
+    let mensaje: String
+    
+    enum CodingKeys: String, CodingKey {
+        case mensaje = "message"
+    }
+}
+
+
+
+extension CancelResponse {
+    var formatted: String {
+        "\(mensaje)"
+    }
+}
+
+
+func cancelTurno(turnoescogido: Int) async throws -> CancelResponse {
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/turnos/\(turnoescogido)/cancel") else {
+        throw URLError(.badURL)
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+    let (data, response) = try await URLSession.shared.data(for: request)
+    
+    guard let httpResponse = response as? HTTPURLResponse,
+          200..<300 ~= httpResponse.statusCode else {
+        throw URLError(.badServerResponse)
+    }
+    
+    return try JSONDecoder().decode(CancelResponse.self, from: data)
+}
+
+
+struct CreateTurnoResponse: Codable {
+    let newTurnoId: Int
+    let mensaje: String
+
+    enum CodingKeys: String, CodingKey {
+        case newTurnoId = "NewTurnoId"
+        case mensaje = "message"
+    }
+}
+
+
+func createTurno(
+    scheduledDate: String,
+    prescriptionId: String,
+    comentariosReceta: String,
+    usrId: Int
+) async throws -> CreateTurnoResponse {
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/turnos") else {
+        throw URLError(.badURL)
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    
+    let body: [String: Any] = [
+        "Scheduled_Date": scheduledDate,
+        "Perscription_Id": prescriptionId,
+        "Comentarios_Receta": comentariosReceta,
+        "Usr_Id": usrId
+    ]
+    
+    request.httpBody = try JSONSerialization.data(withJSONObject: body)
+    
+    let (data, response) = try await URLSession.shared.data(for: request)
+    
+    guard let httpResponse = response as? HTTPURLResponse,
+          200..<300 ~= httpResponse.statusCode else {
+        throw URLError(.badServerResponse)
+    }
+    
+    let decoder = JSONDecoder()
+    return try decoder.decode(CreateTurnoResponse.self, from: data)
+}
+
+struct Turn: Codable {
+    let IDTurno: Int
+
+    enum CodingKeys: String, CodingKey {
+        case IDTurno = "Id"
+    }
+}
+
+func fetchUserTurns(userId: Int) async throws -> [Turn] {
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/users/\(userId)/turns") else {
+        throw URLError(.badURL)
+    }
+    
+    let (data, response) = try await URLSession.shared.data(from: url)
+    
+    guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+        throw URLError(.badServerResponse)
+    }
+    
+    let decoded = try JSONDecoder().decode([Turn].self, from: data)
+    return decoded
+}
+
+
 
 
