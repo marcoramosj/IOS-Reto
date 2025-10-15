@@ -38,7 +38,6 @@ struct DashboardUserView: View {
                 EncabezadoUser(usuario: usuario).padding(.top, 48)
                 
                 VStack(spacing: 20) {
-                    // Tarjeta principal
                     VStack(spacing: 16) {
                         Text("Tu turno")
                             .font(.title.weight(.semibold))
@@ -66,7 +65,6 @@ struct DashboardUserView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 28))
                     .shadow(color: .black.opacity(0.15), radius: 16, x: 0, y: 8)
                     
-                    // Botones
                     VStack(spacing: 18) {
                         BotonPrincipal(title: "Pedir Turno") {
                             router.selected = .turno
@@ -89,7 +87,6 @@ struct DashboardUserView: View {
                         HStack {
                             Spacer()
                             HStack {
-                                // Map button on the left
                                 Button(action: { abrirEnAppleMaps() }) {
                                     Image(systemName: "map.circle.fill")
                                         .font(.system(size: 32, weight: .bold))
@@ -102,7 +99,6 @@ struct DashboardUserView: View {
                                 
                                 Spacer()
                                 
-                                // Logout button on the right
                                 Button(action: { activeAlert = .salir }) {
                                     Image(systemName: "rectangle.portrait.and.arrow.forward.fill")
                                         .font(.system(size: 32, weight: .bold))
@@ -138,8 +134,6 @@ struct DashboardUserView: View {
                                     if let id = turnoId {
                                         let response = try await cancelTurno(turnoescogido: id)
                                         successMessage = response.formatted
-                                        
-                                        // Pido de nuevo los turnos actualizados
                                         let nuevosTurnos = try await fetchUserTurns(userId: idusuario)
                                         let nuevoTurno: UsuarioTurnosAdelante? =
                                             if let primero = nuevosTurnos.first {
@@ -199,7 +193,6 @@ struct DashboardUserView: View {
     }
 }
 
-// MARK: - PREVIEW
 #Preview {
     DashboardUserView(
         usuario: .constant("marcoramos"),
