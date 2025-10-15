@@ -1,4 +1,5 @@
 import SwiftUI
+import MapKit
 
 enum ActiveAlert: Identifiable {
     case cancelar, salir, mensaje
@@ -16,6 +17,14 @@ struct DashboardUserView: View {
     @State private var errorMessage: String? = nil
     @State private var successMessage: String? = nil
     @EnvironmentObject var router: Router
+    private let destinoCoordenadas = CLLocationCoordinate2D(latitude: 25.7320776, longitude: -100.3001734)
+    private let destinoNombre = "Hospital Clínica Nova"
+
+    private func abrirEnAppleMaps() {
+        let destino = MKMapItem(placemark: MKPlacemark(coordinate: destinoCoordenadas))
+        destino.name = destinoNombre
+        destino.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
+    }
     
     var turnoId: Int? {
         turnos.first?.IDTurno
@@ -79,14 +88,31 @@ struct DashboardUserView: View {
                         
                         HStack {
                             Spacer()
-                            Button(action: { activeAlert = .salir }) {
-                                Image(systemName: "rectangle.portrait.and.arrow.forward.fill")
-                                    .font(.system(size: 32, weight: .bold))
+                            HStack {
+                                // Map button on the left
+                                Button(action: { abrirEnAppleMaps() }) {
+                                    Image(systemName: "map.circle.fill")
+                                        .font(.system(size: 32, weight: .bold))
+                                        .accessibilityLabel("Cómo llegar")
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.large)
+                                .tint(Color.marca)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                
+                                Spacer()
+                                
+                                // Logout button on the right
+                                Button(action: { activeAlert = .salir }) {
+                                    Image(systemName: "rectangle.portrait.and.arrow.forward.fill")
+                                        .font(.system(size: 32, weight: .bold))
+                                        .accessibilityLabel("Cerrar sesión")
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.large)
+                                .tint(Color.marca)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
-                            .buttonStyle(.bordered)
-                            .controlSize(.large)
-                            .tint(Color.marca)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
                     
