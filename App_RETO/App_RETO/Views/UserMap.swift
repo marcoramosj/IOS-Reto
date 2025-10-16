@@ -9,12 +9,10 @@ import SwiftUI
 import MapKit
 
 struct UserMap: View {
-    // MARK: - Fixed destination (Hospital Clínica Nova)
     private let destinoNombre = "Hospital Clínica Nova"
     private let destinoCoordenadas = CLLocationCoordinate2D(latitude: 25.7320776,
                                                             longitude: -100.3001734)
 
-    // Initial camera/region centered on the hospital
     @State private var camera = MapCameraPosition.region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 25.7320776, longitude: -100.3001734),
@@ -49,7 +47,6 @@ struct UserMap: View {
             .mapStyle(.standard)
             .ignoresSafeArea()
 
-            // Bottom controls: left-aligned Apple Maps button
             HStack {
                 Button(action: { abrirEnAppleMaps() }) {
                     Label("Open in Apple Maps", systemImage: "map.circle.fill")
