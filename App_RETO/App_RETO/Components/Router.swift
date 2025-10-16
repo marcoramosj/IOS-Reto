@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum TabID: Hashable { case dashboard, turno, ver, hora, inicio }
+enum TabID: Hashable { case dashboard, turno, ver, hora, inicio, Map }
 
 final class Router: ObservableObject {
     @Published var selected: TabID = .dashboard
@@ -16,6 +16,7 @@ final class Router: ObservableObject {
     @Published var pathVer = NavigationPath()
     @Published var pathHora = NavigationPath()
     @Published var pathInicio = NavigationPath()
+    @Published var pathMap = NavigationPath()
 
 
     
@@ -27,6 +28,7 @@ final class Router: ObservableObject {
         case .ver:       pathVer = NavigationPath()
         case .hora:      pathHora = NavigationPath()
         case .inicio:      pathInicio = NavigationPath()
+        case .Map:      pathMap = NavigationPath()
 
         }
     }

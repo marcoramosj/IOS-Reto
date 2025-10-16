@@ -1,5 +1,4 @@
 import SwiftUI
-import MapKit
 
 enum ActiveAlert: Identifiable {
     case cancelar, salir, mensaje
@@ -17,18 +16,8 @@ struct DashboardUserView: View {
     @State private var errorMessage: String? = nil
     @State private var successMessage: String? = nil
     @EnvironmentObject var router: Router
-    private let destinoCoordenadas = CLLocationCoordinate2D(latitude: 25.7320776, longitude: -100.3001734)
-    private let destinoNombre = "Hospital Clínica Nova"
 
-    private func abrirEnAppleMaps() {
-        let destino = MKMapItem(placemark: MKPlacemark(coordinate: destinoCoordenadas))
-        destino.name = destinoNombre
-        destino.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
-    }
-    
-    var turnoId: Int? {
-        turnos.first?.IDTurno
-    }
+    var turnoId: Int? { turnos.first?.IDTurno }
     
     var body: some View {
         ZStack {
@@ -38,6 +27,7 @@ struct DashboardUserView: View {
                 EncabezadoUser(usuario: usuario).padding(.top, 48)
                 
                 VStack(spacing: 20) {
+                    // Card
                     VStack(spacing: 16) {
                         Text("Tu turno")
                             .font(.title.weight(.semibold))
@@ -51,7 +41,6 @@ struct DashboardUserView: View {
                         Text("Faltan \(turno?.turnosAhead ?? 0) turnos por delante")
                             .font(.title3.weight(.medium))
                             .foregroundStyle(.white)
-                        
                     }
                     .frame(maxWidth: .infinity)
                     .padding(32)
@@ -65,16 +54,19 @@ struct DashboardUserView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 28))
                     .shadow(color: .black.opacity(0.15), radius: 16, x: 0, y: 8)
                     
+                    // Buttons
                     VStack(spacing: 18) {
                         BotonPrincipal(title: "Pedir Turno") {
                             router.selected = .turno
                             router.popToRoot(.turno)
                         }
                         .disabled(turnoId != nil)
+                        
                         BotonPrincipal(title: "Ver Hora Pico") {
                             router.selected = .hora
                             router.popToRoot(.hora)
                         }
+                        
                         Button(action: { activeAlert = .cancelar }) {
                             Text("Cancelar Turno")
                                 .font(.system(size: 24, weight: .bold))
@@ -84,31 +76,18 @@ struct DashboardUserView: View {
                         .tint(Color.marca)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         
+                        // Bottom row: only logout on the right
                         HStack {
                             Spacer()
-                            HStack {
-                                Button(action: { abrirEnAppleMaps() }) {
-                                    Image(systemName: "map.circle.fill")
-                                        .font(.system(size: 32, weight: .bold))
-                                        .accessibilityLabel("Cómo llegar")
-                                }
-                                .buttonStyle(.bordered)
-                                .controlSize(.large)
-                                .tint(Color.marca)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                
-                                Spacer()
-                                
-                                Button(action: { activeAlert = .salir }) {
-                                    Image(systemName: "rectangle.portrait.and.arrow.forward.fill")
-                                        .font(.system(size: 32, weight: .bold))
-                                        .accessibilityLabel("Cerrar sesión")
-                                }
-                                .buttonStyle(.bordered)
-                                .controlSize(.large)
-                                .tint(Color.marca)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            Button(action: { activeAlert = .salir }) {
+                                Image(systemName: "rectangle.portrait.and.arrow.forward.fill")
+                                    .font(.system(size: 32, weight: .bold))
+                                    .accessibilityLabel("Cerrar sesión")
                             }
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
+                            .tint(Color.marca)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
                     
@@ -125,40 +104,36 @@ struct DashboardUserView: View {
         .alert(item: $activeAlert) { alert in
             switch alert {
             case .cancelar:
-                    return Alert(
-                        title: Text("¿Seguro?"),
-                        message: Text("¿Quieres cancelar tu turno?"),
-                        primaryButton: .destructive(Text("Continuar")) {
-                            Task {
-                                do {
-                                    if let id = turnoId {
-                                        let response = try await cancelTurno(turnoescogido: id)
-                                        successMessage = response.formatted
-                                        let nuevosTurnos = try await fetchUserTurns(userId: idusuario)
-                                        let nuevoTurno: UsuarioTurnosAdelante? =
-                                            if let primero = nuevosTurnos.first {
-                                                try await fetchTurnosAdelante(IddeTurnos: primero.IDTurno)
-                                            } else {
-                                                nil
-                                            }
-                                        
-                                        turnos = nuevosTurnos
-                                        turno = nuevoTurno
-                                        activeAlert = .mensaje
-                                    } else {
-                                        successMessage = "No se encontró un turno para cancelar."
-                                        activeAlert = .mensaje
-                                    }
-                                } catch {
-                                    errorMessage = "Error de conexión al servidor."
+                return Alert(
+                    title: Text("¿Seguro?"),
+                    message: Text("¿Quieres cancelar tu turno?"),
+                    primaryButton: .destructive(Text("Continuar")) {
+                        Task {
+                            do {
+                                if let id = turnoId {
+                                    let response = try await cancelTurno(turnoescogido: id)
+                                    successMessage = response.formatted
+                                    let nuevosTurnos = try await fetchUserTurns(userId: idusuario)
+                                    let nuevoTurno: UsuarioTurnosAdelante? =
+                                        if let primero = nuevosTurnos.first {
+                                            try await fetchTurnosAdelante(IddeTurnos: primero.IDTurno)
+                                        } else { nil }
+                                    turnos = nuevosTurnos
+                                    turno = nuevoTurno
                                     activeAlert = .mensaje
-                                    print("🔎 Nuevos turnos:", turnos)
+                                } else {
+                                    successMessage = "No se encontró un turno para cancelar."
+                                    activeAlert = .mensaje
                                 }
+                            } catch {
+                                errorMessage = "Error de conexión al servidor."
+                                activeAlert = .mensaje
+                                print("🔎 Nuevos turnos:", turnos)
                             }
-                        },
-                        secondaryButton: .cancel()
-                    )
-                
+                        }
+                    },
+                    secondaryButton: .cancel()
+                )
             case .salir:
                 return Alert(
                     title: Text("¿Seguro?"),
@@ -170,7 +145,6 @@ struct DashboardUserView: View {
                     },
                     secondaryButton: .cancel()
                 )
-                
             case .mensaje:
                 return Alert(
                     title: Text("Aviso"),
