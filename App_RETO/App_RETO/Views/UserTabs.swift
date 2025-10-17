@@ -46,6 +46,14 @@ struct UserTabs: View {
             }
             .tabItem { Label("Mapa", systemImage: "map.circle.fill") }
             .tag(TabID.Map)
+            
+            NavigationStack(path: $router.pathCall) {
+                UserCallView()
+            }
+            .tabItem {Label("Llamada", systemImage: "phone")}
+            .tag(TabID.Call)
+            
+            
             .onAppear {
                 let appearance = UITabBarAppearance()
                 appearance.configureWithOpaqueBackground()
@@ -75,4 +83,8 @@ struct UserTabs: View {
             .environmentObject(testRouter)
         }
     }
+    #Preview {
+        UserCallView()
+    }
+
 }
