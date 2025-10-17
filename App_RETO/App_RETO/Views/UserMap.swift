@@ -10,8 +10,10 @@ import MapKit
 
 struct UserMap: View {
     private let destinoNombre = "Hospital Clínica Nova"
-    private let destinoCoordenadas = CLLocationCoordinate2D(latitude: 25.7320776,
-                                                            longitude: -100.3001734)
+    private let destinoCoordenadas = CLLocationCoordinate2D(
+        latitude: 25.7320776,
+        longitude: -100.3001734
+    )
 
     @State private var camera = MapCameraPosition.region(
         MKCoordinateRegion(
@@ -20,7 +22,6 @@ struct UserMap: View {
         )
     )
 
-    // MARK: - Open Apple Maps with directions
     private func abrirEnAppleMaps() {
         let item = MKMapItem(placemark: MKPlacemark(coordinate: destinoCoordenadas))
         item.name = destinoNombre
@@ -30,45 +31,45 @@ struct UserMap: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // MAP
-            Map(position: $camera) {
-                // Pin / annotation
-                Annotation(destinoNombre, coordinate: destinoCoordenadas) {
-                    ZStack {
-                        Circle().fill(Color.acento.opacity(0.20)).frame(width: 44, height: 44)
-                        Image(systemName: "mappin.circle.fill")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundStyle(Color.acento)
-                            .shadow(radius: 3)
-                    }
+        Map(position: $camera) {
+            Annotation(destinoNombre, coordinate: destinoCoordenadas) {
+                ZStack {
+                    Circle().fill(Color.acento.opacity(0.20))
+                        .frame(width: 44, height: 44)
+                    Image(systemName: "mappin.circle.fill")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(Color.acento)
+                        .shadow(radius: 3)
                 }
             }
-            .mapStyle(.standard)
-            .ignoresSafeArea()
-
-            HStack {
-                Button(action: { abrirEnAppleMaps() }) {
-                    Label("Open in Apple Maps", systemImage: "map.circle.fill")
-                        .font(.headline)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.marca)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
         }
-        .navigationTitle("Map")
-        .navigationBarTitleDisplayMode(.inline)
+        .mapStyle(.standard)
+        .mapControls {
+            MapCompass()
+        }
+        
+        .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
+    }
+
+    private var bottomBar: some View {
+        HStack {
+            Button(action: { abrirEnAppleMaps() }) {
+                Label("Open in Apple Maps", systemImage: "map.circle.fill")
+                    .font(.headline)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Color.marca)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 5)
+        .background(.ultraThinMaterial)
     }
 }
 
 #Preview {
-    UserMap()
-        .environmentObject(Router())
+    UserMap().environmentObject(Router())
 }
