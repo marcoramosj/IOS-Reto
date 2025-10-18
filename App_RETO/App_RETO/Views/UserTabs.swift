@@ -65,6 +65,7 @@ struct UserTabs: View {
             .tag(TabID.Cita)
             
         }
+        .tint(Color.marca)
         .onAppear {
                 let appearance = UITabBarAppearance()
                 appearance.configureWithOpaqueBackground()

@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-// MARK: - Model
 
 struct Appointment: Identifiable, Hashable {
     let id = UUID()
@@ -18,7 +17,6 @@ struct Appointment: Identifiable, Hashable {
     let notes: String?
 }
 
-// MARK: - Mock (hardcoded) data
 
 private extension Array where Element == Appointment {
     static var hardcodedPastWeek: [Appointment] {
@@ -68,7 +66,6 @@ private extension Array where Element == Appointment {
     }
 }
 
-// MARK: - View (Week filter + Floating search button)
 
 struct AppointmentHistoryView: View {
     // Week filter state (start-of-week, locale-aware)
@@ -87,95 +84,123 @@ struct AppointmentHistoryView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottomTrailing) {
-                // Main content
-                if filteredItems.isEmpty {
-                    ContentUnavailableView(
-                        "No hay citas para la semana seleccionada",
-                        systemImage: "calendar",
-                        description: Text("Prueba con otra semana o cambia el término de búsqueda.")
-                    )
-                    .navigationTitle("Historial")
-                } else {
-                    List {
-                        ForEach(groupedByDayKeys, id: \.self) { day in
-                            Section(header: Text(dayTitle(day))) {
-                                ForEach(groupedByDay[day] ?? [], id: \.self) { appt in
-                                    NavigationLink {
-                                        AppointmentDetailView(appt: appt)
-                                    } label: {
-                                        row(appt).contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                        }
-                    }
-                    .listStyle(.insetGrouped)
-                    .navigationTitle("Historial")
-                    .toolbar {
-                        // Week filter menu (right of title)
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Menu {
-                                Picker(
-                                    "Filter by Week",
-                                    selection: Binding(
-                                        get: { selectedWeekStart ?? mostRecentWeekStart },
-                                        set: { selectedWeekStart = $0 }
-                                    )
-                                ) {
-                                    ForEach(availableWeekStarts, id: \.self) { ws in
-                                        Text(weekLabel(for: ws)).tag(ws as Date?)
-                                    }
-                                }
-                            } label: {
-                                Label("Filter", systemImage: "calendar.badge.clock")
-                            }
-                        }
 
-                        // Count label
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Text("\(filteredItems.count) total")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
+                // CONTENT
+                Group {
+                    if filteredItems.isEmpty {
+                        ContentUnavailableView(
+                            "No hay citas para la semana seleccionada",
+                            systemImage: "calendar",
+                            description: Text("Prueba con otra semana o cambia el término de búsqueda.")
+                        )
+                    } else {
+                        List {
+                            ForEach(groupedByDayKeys, id: \.self) { day in
+                                Section(header: Text(dayTitle(day))) {
+                                    ForEach(groupedByDay[day] ?? [], id: \.self) { appt in
+                                        NavigationLink {
+                                            AppointmentDetailView(appt: appt)
+                                        } label: {
+                                            row(appt).contentShape(Rectangle())
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                            }
                         }
+                        .listStyle(.insetGrouped)
+                    }
+                }
+                .navigationTitle("Historial")
+                .toolbar {
+                    // Week filter menu (right of title)
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Menu {
+                            Picker(
+                                "Filter by Week",
+                                selection: Binding(
+                                    get: { selectedWeekStart ?? mostRecentWeekStart },
+                                    set: { selectedWeekStart = $0 }
+                                )
+                            ) {
+                                ForEach(availableWeekStarts, id: \.self) { ws in
+                                    Text(weekLabel(for: ws)).tag(ws as Date?)
+                                }
+                            }
+                        } label: {
+                            Label("Filter", systemImage: "calendar.badge.clock")
+                                
+                                
+                        }.tint(.marca)
+                    }
+                    
+
+                    // Count label
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Text("\(filteredItems.count) total")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                     }
                 }
 
-                // Floating search button (black circle)
+                // FLOATING SEARCH BUTTON (bottom-right)
                 Button {
-                    withAnimation(.spring()) { isSearching.toggle() }
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                        isSearching.toggle()
+                    }
                 } label: {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 20, weight: .medium))
+                    Image(systemName: isSearching ? "xmark" : "magnifyingglass")
+                        .font(.system(size: 22, weight: .semibold))
                         .foregroundColor(.white)
-                        .padding()
-                        .background(Color.black)
+                        .frame(width: 56, height: 56)
+                        .background(Color.marca)
                         .clipShape(Circle())
-                        .shadow(radius: 4)
+                        .shadow(color: .black.opacity(0.2), radius: 6, x: 0, y: 3)
                 }
-                .padding(.trailing, 24)
-                .padding(.bottom, 24)
+                .padding(.trailing, 26)
+                .padding(.bottom, 26)
 
-                // Slide-down search bar overlay
+                // SEARCH OVERLAY (polished)
                 if isSearching {
-                    VStack {
-                        HStack {
-                            TextField("Buscar título, lugar o nota", text: $searchText)
-                                .padding(10)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(10)
-                                .padding(.horizontal)
-                                .onSubmit { withAnimation { isSearching = false } }
+                    // Dim background
+                    Color.black.opacity(0.28)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                        .onTapGesture {
+                            withAnimation(.spring()) { isSearching = false }
+                        }
 
-                            Button {
-                                withAnimation { isSearching = false }
-                                searchText = ""
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.secondary)
-                                    .padding(.trailing, 10)
+                    VStack(spacing: 12) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.gray.opacity(0.75))
+
+                            TextField("Buscar título, lugar o nota", text: $searchText)
+                                .textFieldStyle(.plain)
+                                .autocorrectionDisabled(true)
+                                .textInputAutocapitalization(.never)
+                                .submitLabel(.search)
+                                .onSubmit {
+                                    withAnimation(.spring()) { isSearching = false }
+                                }
+
+                            if !searchText.isEmpty {
+                                Button {
+                                    searchText = ""
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.gray.opacity(0.7))
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
+                        .padding(12)
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 3)
+                        .padding(.horizontal)
+                        .padding(.top, 14)
+
                         Spacer()
                     }
                     .transition(.move(edge: .top).combined(with: .opacity))
@@ -191,7 +216,7 @@ struct AppointmentHistoryView: View {
 
     private var calendar: Calendar {
         var cal = Calendar.current
-        // Force Monday start if you prefer: cal.firstWeekday = 2
+        // Force Monday as first day if you prefer: cal.firstWeekday = 2
         return cal
     }
 
@@ -215,10 +240,8 @@ struct AppointmentHistoryView: View {
 
     private func weekLabel(for weekStart: Date) -> String {
         let weekEnd = endOfWeek(for: weekStart)
-        let short = DateFormatter()
-        short.dateFormat = "MMM d"
-        let y = DateFormatter()
-        y.dateFormat = "yyyy"
+        let short = DateFormatter(); short.dateFormat = "MMM d"
+        let y = DateFormatter(); y.dateFormat = "yyyy"
         return "\(short.string(from: weekStart))–\(short.string(from: weekEnd)), \(y.string(from: weekStart))"
     }
 
