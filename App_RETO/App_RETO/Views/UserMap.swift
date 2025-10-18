@@ -9,67 +9,109 @@ import SwiftUI
 import MapKit
 
 struct UserMap: View {
-    // MARK: - Fixed destination (Hospital Clínica Nova)
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var showMap = true
+    
+    @State private var selectedLocation: LocationsList?
+    @State private var showingDestinationList = false
+    @State private var locations: [LocationsList] = []
+    
     private let destinoNombre = "Hospital Clínica Nova"
-    private let destinoCoordenadas = CLLocationCoordinate2D(latitude: 25.7320776,
-                                                            longitude: -100.3001734)
-
-    // Initial camera/region centered on the hospital
+//    private let destinoCoordenadas = CLLocationCoordinate2D(latitude: 25.7320776, longitude: -100.3001734)
+    
     @State private var camera = MapCameraPosition.region(
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 25.7320776, longitude: -100.3001734),
-            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-        )
+        MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 25.6866, longitude: -100.3161),
+                           span: MKCoordinateSpan(latitudeDelta: 0.25, longitudeDelta: 0.25))
     )
-
-    // MARK: - Open Apple Maps with directions
-    private func abrirEnAppleMaps() {
-        let item = MKMapItem(placemark: MKPlacemark(coordinate: destinoCoordenadas))
-        item.name = destinoNombre
+    
+    private func abrirEnAppleMaps(destino: LocationsList) {
+        let coord = CLLocationCoordinate2D(latitude: destino.latitude, longitude: destino.longitude)
+        let placemark = MKPlacemark(coordinate: coord)
+        let item = MKMapItem(placemark: placemark)
+        item.name = destino.locationName
+        
         item.openInMaps(launchOptions: [
             MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
         ])
     }
-
+    
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // MAP
-            Map(position: $camera) {
-                // Pin / annotation
-                Annotation(destinoNombre, coordinate: destinoCoordenadas) {
-                    ZStack {
-                        Circle().fill(Color.acento.opacity(0.20)).frame(width: 44, height: 44)
-                        Image(systemName: "mappin.circle.fill")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundStyle(Color.acento)
-                            .shadow(radius: 3)
+            ZStack(alignment: .bottom) {
+                if showMap {
+                    Map(position: $camera) {
+                        ForEach(locations) { loc in
+                            Annotation(loc.locationName,
+                                       coordinate: CLLocationCoordinate2D(latitude: loc.latitude,
+                                                                          longitude: loc.longitude)) {
+                                ZStack {
+                                    Circle().fill(Color.acento.opacity(0.20)).frame(width: 44, height: 44)
+                                    Image(systemName: "mappin.circle.fill")
+                                        .font(.system(size: 28, weight: .bold))
+                                        .foregroundStyle(Color.acento)
+                                        .shadow(radius: 3)
+                                }
+                            }
+                        }
                     }
+                    .mapStyle(.standard)
+                    .ignoresSafeArea()
+                } else {
+                    // Placeholder to keep layout stable while Map is unmounted
+                    Color.clear.ignoresSafeArea()
+                }
+
+                HStack {
+                    Button {
+                        showingDestinationList = true
+                    } label: {
+                        Label("Choose in Apple Maps", systemImage: "map.circle.fill")
+                            .font(.headline)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Color.marca)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .confirmationDialog("Select a destination", isPresented: $showingDestinationList) {
+                        ForEach(locations) { loc in
+                            Button(loc.locationName) {
+                                selectedLocation = loc
+                                abrirEnAppleMaps(destino: loc)
+                            }
+                        }
+                    }
+
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+            }
+            .navigationTitle("Map")
+            .navigationBarTitleDisplayMode(.inline)
+            .task {
+                do {
+                    locations = try await fetchLocationsList()
+                    print("Locations loaded:", locations.count)
+                } catch {
+                    print("Error fetching data:", error)
                 }
             }
-            .mapStyle(.standard)
-            .ignoresSafeArea()
-
-            // Bottom controls: left-aligned Apple Maps button
-            HStack {
-                Button(action: { abrirEnAppleMaps() }) {
-                    Label("Open in Apple Maps", systemImage: "map.circle.fill")
-                        .font(.headline)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
+            .onChange(of: scenePhase) { phase in
+                // Unmount when leaving the foreground, remount when active again.
+                switch phase {
+                case .active:
+                    // Delay re-mount slightly to ensure prior command buffers are done.
+                    DispatchQueue.main.async {
+                        showMap = true
+                    }
+                case .inactive, .background:
+                    showMap = false
+                @unknown default:
+                    break
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.marca)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                Spacer()
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
         }
-        .navigationTitle("Map")
-        .navigationBarTitleDisplayMode(.inline)
     }
-}
 
 #Preview {
     UserMap()
