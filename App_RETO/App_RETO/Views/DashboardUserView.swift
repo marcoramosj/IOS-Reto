@@ -9,15 +9,14 @@ struct DashboardUserView: View {
     @Binding var usuario: String
     @Binding var loggedIn: Bool
     @Binding var idusuario: Int
+    @Binding var TurnoId: Int?
+    @Binding var turnos: [Turn]
     
     @State private var activeAlert: ActiveAlert?
-    @State private var turnos: [Turn] = []
     @State private var turno: UsuarioTurnosAdelante? = nil
     @State private var errorMessage: String? = nil
     @State private var successMessage: String? = nil
     @EnvironmentObject var router: Router
-
-    var turnoId: Int? { turnos.first?.IDTurno }
     
     var body: some View {
         ZStack {
@@ -33,7 +32,7 @@ struct DashboardUserView: View {
                             .font(.title.weight(.semibold))
                             .foregroundStyle(.white.opacity(0.9))
                         
-                        Text(turnoId != nil ? "\(turnoId!)" : "-")
+                        Text(TurnoId.map { "\($0)" } ?? "-")
                             .font(.system(size: 70, weight: .heavy, design: .rounded))
                             .monospacedDigit()
                             .foregroundStyle(.white)
@@ -60,7 +59,7 @@ struct DashboardUserView: View {
                             router.selected = .turno
                             router.popToRoot(.turno)
                         }
-                        .disabled(turnoId != nil)
+                        .disabled(TurnoId != nil)
                         
                         BotonPrincipal(title: "Ver Hora Pico") {
                             router.selected = .hora
@@ -110,7 +109,7 @@ struct DashboardUserView: View {
                     primaryButton: .destructive(Text("Continuar")) {
                         Task {
                             do {
-                                if let id = turnoId {
+                                if let id = TurnoId {
                                     let response = try await cancelTurno(turnoescogido: id)
                                     successMessage = response.formatted
                                     let nuevosTurnos = try await fetchUserTurns(userId: idusuario)
@@ -171,7 +170,13 @@ struct DashboardUserView: View {
     DashboardUserView(
         usuario: .constant("marcoramos"),
         loggedIn: .constant(true),
-        idusuario: .constant(8)
+        idusuario: .constant(8),
+        TurnoId: .constant(12),
+        turnos: .constant([
+                    Turn(IDTurno: 12),
+                    Turn(IDTurno: 13),
+                    Turn(IDTurno: 14)
+        ])
     )
     .environmentObject(Router())
 }

@@ -13,12 +13,17 @@ struct UserTabs: View {
     @Binding var usuario: String
     @Binding var loggedIn: Bool
     @Binding var idusuario: Int
+    @State private var turnos: [Turn] = []
+    @State private var turnoId: Int? = nil
+
+
     
     
     var body: some View {
         TabView(selection: $router.selected) {
+            
             NavigationStack(path: $router.pathDashboard) {
-                DashboardUserView(usuario: $usuario, loggedIn: $loggedIn,idusuario:$idusuario)
+                DashboardUserView(usuario: $usuario, loggedIn: $loggedIn,idusuario:$idusuario, TurnoId: $turnoId, turnos:$turnos)
             }
             .tabItem { Label("Dashboard", systemImage: "house.fill") }
             .tag(TabID.dashboard)
@@ -30,7 +35,7 @@ struct UserTabs: View {
             .tag(TabID.turno)
             
             NavigationStack(path: $router.pathVer) {
-                VerTurnoView(usuario: $usuario, loggedIn: $loggedIn)
+                VerTurnoView(usuario: $usuario, loggedIn: $loggedIn, TurnoId: $turnoId,turnos:$turnos)
             }
             .tabItem { Label("Ver Turno", systemImage: "list.bullet.rectangle") }
             .tag(TabID.ver)
@@ -46,7 +51,22 @@ struct UserTabs: View {
             }
             .tabItem { Label("Mapa", systemImage: "map.circle.fill") }
             .tag(TabID.Map)
-            .onAppear {
+            
+            NavigationStack(path: $router.pathCall) {
+                UserCallView()
+            }
+            .tabItem {Label("Llamada", systemImage: "phone")}
+            .tag(TabID.Call)
+            
+            NavigationStack(path: $router.pathCita) {
+                AppointmentHistoryView()
+            }
+            .tabItem {Label("Historial", systemImage: "document.on.clipboard")}
+            .tag(TabID.Cita)
+            
+        }
+        .tint(Color.marca)
+        .onAppear {
                 let appearance = UITabBarAppearance()
                 appearance.configureWithOpaqueBackground()
                 appearance.backgroundColor = UIColor(named: "tabGray") ?? UIColor.systemGray6
@@ -75,4 +95,6 @@ struct UserTabs: View {
             .environmentObject(testRouter)
         }
     }
-}
+    #Preview {
+        UserCallView()
+    }

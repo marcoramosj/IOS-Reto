@@ -238,35 +238,46 @@ struct TurnosChartView: View {
     
     var body: some View {
         VStack {
-            Text("Turnos por hora (\(formattedDate))")
+            Text("Turnos por hora")
                 .font(.title2).bold()
-                .padding(20)
+            Text("(\(formattedDate))")
+                .padding(.bottom, 5)
+                
             
             ScrollView(.horizontal, showsIndicators: false) {
-                Chart {
-                    ForEach(groupedByHour, id: \.hour) { item in
-                        BarMark(
-                            x: .value("Hora", "\(item.hour):00"),
-                            y: .value("Cantidad", item.count)
-                        )
-                        .foregroundStyle(isAccessible(hour: item.hour) ? Color.acento.gradient : Color.marca.gradient)
-                    }
+                HStack{
+                    Text("Turnos")
+                        .rotationEffect(Angle(degrees: -90))
                     
-                    if let hourInfo = accessibleHour {
-                        RuleMark(x: .value("Hora", "\(hourInfo.startHour):00 GMT"))
-                            .lineStyle(StrokeStyle(lineWidth: 2, dash: [5]))
-                            .foregroundStyle(Color.acento)
-                            .annotation(position: .overlay, alignment: .top, spacing: 10) {
-                                Text("Más accesible")
-                                    .font(.caption).bold()
-                                    .foregroundStyle(Color.acento)
-                                    .offset(y: -10)
-                            }
+                    Chart {
+                        ForEach(groupedByHour, id: \.hour) { item in
+                            BarMark(
+                                x: .value("Hora", "\(item.hour):00"),
+                                y: .value("Cantidad", item.count)
+                            )
+                            .foregroundStyle(isAccessible(hour: item.hour) ? Color.acento.gradient : Color.marca.gradient)
+                        }
+                        
+                        
+                        if let hourInfo = accessibleHour {
+                            RuleMark(x: .value("Hora", "\(hourInfo.startHour):00 GMT"))
+                                .lineStyle(StrokeStyle(lineWidth: 2, dash: [5]))
+                                .foregroundStyle(Color.acento)
+                                .annotation(position: .overlay, alignment: .top, spacing: 10) {
+                                    Text("Más accesible")
+                                        .font(.caption).bold()
+                                        .foregroundStyle(Color.acento)
+                                        .offset(y: -10)
+                                }
+                        }
                     }
+                    .frame(width: 24 * 50, height: 200)
                 }
-                .frame(width: 24 * 50, height: 200)
-            }
-            .padding()
+                
+                }
+                .padding()
+            
+            Text("Horas de servicio")
         }
     }
 }
@@ -314,3 +325,4 @@ func fechaCompletaConHoraSeleccionada(_ horaSeleccionada: Date) -> String {
 
     return formatter.string(from: fechaFinal)
 }
+

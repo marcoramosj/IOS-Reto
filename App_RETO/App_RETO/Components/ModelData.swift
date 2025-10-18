@@ -305,5 +305,3 @@ func fetchLocationsList() async throws -> [LocationsList] {
 }
 
 
-
-
