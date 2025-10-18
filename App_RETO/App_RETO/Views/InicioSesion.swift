@@ -77,10 +77,7 @@ struct InicioSesion: View {
             Task {
                 do {
                     accesos = try await fetchUsuarios()
-                    print("Usuarios desde API:")
-                    for acceso in accesos {
-                        print("nombre: \(acceso.nombre), pass: \(acceso.password), id: \(acceso.iduser)")
-                    }
+
                 } catch {
                     print("Error al obtener accesos: \(error)")
                 }

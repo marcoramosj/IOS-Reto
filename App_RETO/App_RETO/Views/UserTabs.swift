@@ -13,12 +13,16 @@ struct UserTabs: View {
     @Binding var usuario: String
     @Binding var loggedIn: Bool
     @Binding var idusuario: Int
+    @State private var turnos: [Turn] = []
+    @State private var turnoId: Int? = nil
+
+
     
     
     var body: some View {
         TabView(selection: $router.selected) {
             NavigationStack(path: $router.pathDashboard) {
-                DashboardUserView(usuario: $usuario, loggedIn: $loggedIn,idusuario:$idusuario)
+                DashboardUserView(usuario: $usuario, loggedIn: $loggedIn,idusuario:$idusuario, TurnoId: $turnoId, turnos:$turnos)
             }
             .tabItem { Label("Dashboard", systemImage: "house.fill") }
             .tag(TabID.dashboard)
@@ -30,7 +34,7 @@ struct UserTabs: View {
             .tag(TabID.turno)
             
             NavigationStack(path: $router.pathVer) {
-                VerTurnoView(usuario: $usuario, loggedIn: $loggedIn)
+                VerTurnoView(usuario: $usuario, loggedIn: $loggedIn, TurnoId: $turnoId,turnos:$turnos)
             }
             .tabItem { Label("Ver Turno", systemImage: "list.bullet.rectangle") }
             .tag(TabID.ver)

@@ -238,11 +238,17 @@ struct TurnosChartView: View {
     
     var body: some View {
         VStack {
-            Text("Turnos por hora (\(formattedDate))")
+            Text("Turnos por hora")
                 .font(.title2).bold()
-                .padding(20)
+            Text("(\(formattedDate))")
+                .padding(.bottom, 5)
+                
             
             ScrollView(.horizontal, showsIndicators: false) {
+                Text("Cantidad de turnos")
+                        .font(.headline)
+                        .rotationEffect(.degrees(-90)) // rota para estar vertical
+                        .frame(width: 20)
                 Chart {
                     ForEach(groupedByHour, id: \.hour) { item in
                         BarMark(
@@ -267,6 +273,7 @@ struct TurnosChartView: View {
                 .frame(width: 24 * 50, height: 200)
             }
             .padding()
+            Text("Horas de servicio")
         }
     }
 }

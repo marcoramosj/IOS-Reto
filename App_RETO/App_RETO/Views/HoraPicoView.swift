@@ -87,6 +87,7 @@ struct HoraPicoView: View {
                             fill: Color.marca
                         )
                         .padding(.horizontal, AppTheme.padding)
+                        .padding(.top, AppTheme.padding)
                         
                         Spacer()
                         

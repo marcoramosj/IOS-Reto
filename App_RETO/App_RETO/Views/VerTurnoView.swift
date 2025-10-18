@@ -3,18 +3,26 @@ import SwiftUI
 struct VerTurnoView: View {
     @Binding var usuario: String
     @Binding var loggedIn: Bool
+    @Binding var TurnoId: Int?
+    @Binding var turnos: [Turn]
+    
     @EnvironmentObject var router: Router
 
     var body: some View {
         VStack(spacing: 24) {
             ScrollView {
                 VStack(spacing: 28) {
-                    TurnoProfileImage(size: 140).padding(.top, 20)
+                    Image("LogoNova2")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 215)
+                        .padding(.top, 80)
 
-                    Text("Tu turno: \(usuario)")
+                    Text("Tu turno:")
                         .font(.title).fontWeight(.bold).foregroundStyle(.gray)
+                    
 
-                    Text("02")
+                    Text(TurnoId.map { "\($0)" } ?? "-")
                         .font(.system(size: 72, weight: .heavy, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(.orange)
@@ -48,16 +56,6 @@ struct VerTurnoView: View {
 }
 
 #Preview {
-    struct PreviewContainer: View {
-        @State private var mockUser = "Jane Doe"
-        @State private var mockLoggedIn = true
-        @StateObject private var router = Router() // Assuming Router is an ObservableObject
-
-        var body: some View {
-            VerTurnoView(usuario: $mockUser, loggedIn: $mockLoggedIn)
-        }
-    }
-
-    // You need to return the container to display the preview
-    return PreviewContainer()
+    VerTurnoView(usuario: .constant("Mario"), loggedIn:.constant(true), TurnoId: .constant(12),turnos: .constant([ Turn(IDTurno: 12),Turn(IDTurno: 13),Turn(IDTurno: 14)
+                 ]) )
 }
