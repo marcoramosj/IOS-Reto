@@ -321,3 +321,4 @@ func fechaCompletaConHoraSeleccionada(_ horaSeleccionada: Date) -> String {
 
     return formatter.string(from: fechaFinal)
 }
+

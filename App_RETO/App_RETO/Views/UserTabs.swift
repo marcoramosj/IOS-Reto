@@ -21,6 +21,7 @@ struct UserTabs: View {
     
     var body: some View {
         TabView(selection: $router.selected) {
+            
             NavigationStack(path: $router.pathDashboard) {
                 DashboardUserView(usuario: $usuario, loggedIn: $loggedIn,idusuario:$idusuario, TurnoId: $turnoId, turnos:$turnos)
             }
@@ -57,8 +58,14 @@ struct UserTabs: View {
             .tabItem {Label("Llamada", systemImage: "phone")}
             .tag(TabID.Call)
             
+            NavigationStack(path: $router.pathCita) {
+                AppointmentHistoryView()
+            }
+            .tabItem {Label("Historial", systemImage: "document.on.clipboard")}
+            .tag(TabID.Cita)
             
-            .onAppear {
+        }
+        .onAppear {
                 let appearance = UITabBarAppearance()
                 appearance.configureWithOpaqueBackground()
                 appearance.backgroundColor = UIColor(named: "tabGray") ?? UIColor.systemGray6
@@ -90,5 +97,3 @@ struct UserTabs: View {
     #Preview {
         UserCallView()
     }
-
-}
