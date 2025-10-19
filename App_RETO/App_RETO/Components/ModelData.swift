@@ -191,6 +191,41 @@ struct CreateTurnoResponse: Codable {
     }
 }
 
+//// MARK: - For /locations
+//struct LocationsList: Codable, Identifiable {
+//    let id = UUID()
+//    let latitude: String
+//    let longitude: String
+//    let locationName: String
+//    
+//    enum CodingKeys: String, CodingKey{
+//        case latitude = "latitude"
+//        case longitude = "longitude"
+//        case locationName = "location_name"
+//    }
+//}
+
+struct LocationsList: Codable, Identifiable {
+    let id = UUID()
+    let latitude: Double
+    let longitude: Double
+    let locationName: String
+    
+    enum CodingKeys: String, CodingKey {
+        case latitude, longitude
+        case locationName = "location_name"
+    }
+    
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let latStr = try c.decode(String.self, forKey: .latitude)
+        let lonStr = try c.decode(String.self, forKey: .longitude)
+        latitude = Double(latStr) ?? 0.0
+        longitude = Double(lonStr) ?? 0.0
+        locationName = try c.decode(String.self, forKey: .locationName)
+    }
+}
+
 
 func createTurno(
     scheduledDate: String,
@@ -247,6 +282,26 @@ func fetchUserTurns(userId: Int) async throws -> [Turn] {
     
     let decoded = try JSONDecoder().decode([Turn].self, from: data)
     return decoded
+}
+
+// MARK: - Función para traer las ubicaciones desde la API
+//func fetchLocationsList() async throws -> [LocationsList] {
+//    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/locations") else {
+//        throw URLError(.badURL)
+//    }
+//    
+//    let (data, _) = try await URLSession.shared.data(from: url)
+//    let decoder = JSONDecoder()
+//    return try decoder.decode([LocationsList].self, from: data)
+//}
+
+func fetchLocationsList() async throws -> [LocationsList] {
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/locations")
+    else { throw URLError(.badURL) }
+
+    let (data, _) = try await URLSession.shared.data(from: url)
+    let decoder = JSONDecoder()
+    return try decoder.decode([LocationsList].self, from: data)
 }
 
 
