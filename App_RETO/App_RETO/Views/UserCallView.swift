@@ -62,7 +62,7 @@ struct UserCallView: View {
                                             showDeleteAlert = true
                                         } label: {
                                             Label("Eliminar", systemImage: "trash")
-                                                .tint(Color.accentColor)
+                                                .tint(Color.acento)
                                         }
                                     }
                             }
