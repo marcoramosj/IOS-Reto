@@ -306,6 +306,8 @@ func fetchLocationsList() async throws -> [LocationsList] {
 
 
 
+
+
 // MARK: - UI Model
 struct CallRecord: Identifiable, Equatable {
     let id: Int
@@ -376,22 +378,6 @@ private let baseURL = "https://los-cinco-informaticos.tc2007b.tec.mx:10206"
 // MARK: - GET /users/{user_id}/calls  → list for one user
 // ============================================================
 
-private func fetchUserCalls(userId: Int) async throws -> [CallAPIRow] {
-    guard let url = URL(string: "\(baseURL)/users/\(userId)/calls") else {
-        throw URLError(.badURL)
-    }
-
-    let (data, response) = try await URLSession.shared.data(from: url)
-    guard let http = response as? HTTPURLResponse else {
-        throw URLError(.badServerResponse)
-    }
-    guard (200...299).contains(http.statusCode) else {
-        let body = String(data: data, encoding: .utf8) ?? "<non-utf8 response>"
-        throw HTTPError(status: http.statusCode, body: body)
-    }
-
-    return try makeDecoder().decode([CallAPIRow].self, from: data)
-}
 
 /// UI wrapper: maps API rows to view model (newest first)
 func loadUserCallsForUI(userId: Int) async throws -> [CallRecord] {
@@ -495,4 +481,169 @@ func deleteUserCall(userId: Int, callId: Int) async throws {
 /// UI wrapper
 func deleteCallFromUI(userId: Int, call: CallRecord) async throws {
     try await deleteUserCall(userId: userId, callId: call.id)
+}
+
+
+// ADD this to ModelData.swift (keep your existing types & GET code)
+
+// Keep this at file scope (NOT inside another type)
+func createUserCallForUI(
+    userId: Int,
+    name: String,
+    number: String,
+    startedAt: Date = Date()
+) async throws -> CallRecord {
+    let url = try URL(string: "\(baseURL)/users/\(userId)/calls")
+        .unwrap(or: URLError(.badURL))
+
+    var req = URLRequest(url: url)
+    req.httpMethod = "POST"
+    req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+    let iso = ISO8601DateFormatter()
+    iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+    // ⚠️ keys must match your backend’s expected casing
+    let body: [String: Any] = [
+        "Name": name,
+        "Number": number,
+        "StartedAt": iso.string(from: startedAt)
+    ]
+    req.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+    let (data, response) = try await URLSession.shared.data(for: req)
+    guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+        let text = String(data: data, encoding: .utf8) ?? "<non-utf8 response>"
+        throw HTTPError(status: (response as? HTTPURLResponse)?.statusCode ?? -1, body: text)
+    }
+
+    let row = try makeDecoder().decode(CallAPIRow.self, from: data)
+    return CallRecord(
+        id: row.id,
+        name: row.name,
+        date: {
+            let df = DateFormatter()
+            df.locale = .init(identifier: "en_US_POSIX")
+            df.dateFormat = "dd MMM yyyy, h:mm a"
+            return df.string(from: row.startedAt)
+        }(),
+        duration: {
+            guard let s = row.durationSec else { return "" }
+            return String(format: "%dm %02ds", s/60, s%60)
+        }()
+    )
+}
+
+// tiny helper
+private extension Optional {
+    func unwrap(or error: @autoclosure () -> Error) throws -> Wrapped {
+        guard let value = self else { throw error() }
+        return value
+    }
+}
+
+// === Picker data from backend ===============================================
+// GET /api/activities/{caller_id}  -> recent (Name, Number) pairs
+
+
+
+// What the picker uses (public, not private)
+public struct CallDestination: Hashable, Identifiable, Codable {
+    public var id: String { name + "|\(number)" }
+    public let name: String
+    public let number: String
+}
+
+// Wrapper that maps the raw API rows to the UI type
+public func loadCallDestinationsForUI(callerId: Int) async throws -> [CallDestination] {
+    let rows = try await fetchCallDestinations(callerId: callerId)
+    // de-dupe (name, number) while keeping order
+    var seen = Set<String>()
+    return rows.compactMap { row in
+        let key = "\(row.name)|\(row.number)"
+        guard !seen.contains(key) else { return nil }
+        seen.insert(key)
+        return CallDestination(name: row.name, number: row.number)
+    }
+}
+
+// === Picker data from backend ===============================================
+// GET /api/activities/{caller_id}  -> recent (Name, Number) pairs
+
+struct ActivityAPIRow: Codable {
+    let name: String
+    let number: String
+    enum CodingKeys: String, CodingKey {
+        case name   = "Name"
+        case number = "Number"
+    }
+}
+
+func fetchCallDestinations(callerId: Int) async throws -> [ActivityAPIRow] {
+    guard let url = URL(string: "\(baseURL)/api/activities/\(callerId)") else {
+        throw URLError(.badURL)
+    }
+    let (data, resp) = try await URLSession.shared.data(from: url)
+    guard let http = resp as? HTTPURLResponse else { throw URLError(.badServerResponse) }
+
+    // Accept empty list
+    if http.statusCode == 204 { return [] }
+
+    guard (200...299).contains(http.statusCode) else {
+        let body = String(data: data, encoding: .utf8) ?? "<non-utf8 response>"
+        throw HTTPError(status: http.statusCode, body: body)
+    }
+
+    // If backend sometimes returns {}, treat as empty
+    if data.isEmpty { return [] }
+
+    return try makeDecoder().decode([ActivityAPIRow].self, from: data)
+}
+
+private func fetchUserCalls(userId: Int) async throws -> [CallAPIRow] {
+    guard let url = URL(string: "\(baseURL)/users/\(userId)/calls") else {
+        throw URLError(.badURL)
+    }
+
+    let (data, response) = try await URLSession.shared.data(from: url)
+    guard let http = response as? HTTPURLResponse else {
+        throw URLError(.badServerResponse)
+    }
+
+    if http.statusCode == 204 { return [] }
+
+    guard (200...299).contains(http.statusCode) else {
+        let body = String(data: data, encoding: .utf8) ?? "<non-utf8 response>"
+        throw HTTPError(status: http.statusCode, body: body)
+    }
+
+    if data.isEmpty { return [] }
+
+    return try makeDecoder().decode([CallAPIRow].self, from: data)
+}
+
+// POST /api/historial-contacto  (used after returning from the Phone app)
+func createHistorialContacto(callerId: Int, name: String, number: String, startedAt: Date) async throws {
+    guard let url = URL(string: "\(baseURL)/api/historial-contacto") else {
+        throw URLError(.badURL)
+    }
+    var req = URLRequest(url: url)
+    req.httpMethod = "POST"
+    req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+    let iso = ISO8601DateFormatter()
+    iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+    let body: [String: Any] = [
+        "CallerId": callerId,
+        "Name": name,
+        "Number": number,
+        "StartedAt": iso.string(from: startedAt) // include only if your backend accepts it
+    ]
+    req.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+    let (_, resp) = try await URLSession.shared.data(for: req)
+    guard let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+        throw HTTPError(status: (resp as? HTTPURLResponse)?.statusCode ?? -1, body: "POST /api/historial-contacto failed")
+    }
 }
