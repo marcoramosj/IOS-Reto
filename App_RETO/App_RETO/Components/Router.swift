@@ -19,6 +19,7 @@ final class Router: ObservableObject {
     @Published var pathMap = NavigationPath()
     @Published var pathCall = NavigationPath()
     @Published var pathCita = NavigationPath()
+    @Published var necesitaActualizarTurnos: Bool = false
 
 
     

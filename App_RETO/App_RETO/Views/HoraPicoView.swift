@@ -84,7 +84,7 @@ struct HoraPicoView: View {
                             icon: "clock.fill",
                             title: "Hora más accesible del día",
                             value: "\(hourInfo.startHour):00 - \(hourInfo.endHour + 1):00",
-                            fill: Color.marca
+                            fill: Color.acento
                         )
                         .padding(.horizontal, AppTheme.padding)
                         .padding(.top, AppTheme.padding)

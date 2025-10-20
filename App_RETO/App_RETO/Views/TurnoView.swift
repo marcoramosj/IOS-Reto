@@ -14,7 +14,6 @@ struct TurnoView: View {
 
     @State private var hora = Date()
     @State private var numeroReceta = ""
-    @State private var idReceta = ""
     @State private var comentario = ""
     
     @State private var mostrarDatePicker = false
@@ -35,26 +34,41 @@ struct TurnoView: View {
         VStack(spacing: 12) {
             ScrollView {
                 VStack(spacing: 18) {
-                    TurnoProfileImage(size: 120).padding(.top, 16)
-                    Text(usuario).font(.title).bold().foregroundStyle(.orange).padding(.bottom,20)
+                    Image("LogoNova2")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 215)
+                        .padding(.top, 80)
 
                     sectionLabel("Escoge una hora")
 
-                    HStack {
                         VStack(alignment: .center, spacing: 6) {
-                            sectionLabel("Hora")
                             DatePicker("", selection: $hora, displayedComponents: .hourAndMinute)
                                 .datePickerStyle(.compact)
                                 .labelsHidden()
                                 .scaleEffect(1.4)
                         }
-                        Spacer()
-                    }
-                    .padding(.bottom,20)
-
-                    sectionLabel("ID de usuario")
-                    Text("\(idusuario)").font(.title3).padding(.bottom,20)
                     
+                        sectionLabel("ID de receta")
+                    VStack(alignment: .trailing, spacing: 6){
+                        TextField("Rxxxxx",text: $numeroReceta)
+                            .padding(5)
+                            .frame(width: 200, height: 40)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.marca, lineWidth: 2))
+                    }
+                    
+                    sectionLabel("Comentario de cita (opcional)")
+                VStack(alignment: .trailing, spacing: 6){
+                    TextField("comentario",text: $comentario)
+                        .padding(5)
+                        .frame(width: 350, height: 40)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.marca, lineWidth: 2))
+                }
+                    Spacer()
                     HStack(spacing: 25) {
                         Button(action: {
                             router.selected = .dashboard
@@ -69,15 +83,21 @@ struct TurnoView: View {
                         .buttonStyle(.bordered)
                         .tint(Color.marca)
 
-                        // 👇 BOTÓN MODIFICADO
                         BotonPrincipal(title: "Agendar") {
-                            // Crear una tarea asíncrona para llamar a la API
+                            let recetaValida = isRecetaValida(numeroReceta)
+                            
+                            if !recetaValida {
+                                alertTitle = "Receta inválida"
+                                alertMessage = "El ID de la receta debe empezar con 'R' seguida solo de números. Ejemplo: R12345"
+                                showAlert = true
+                                return
+                            }
                             Task {
                                 let fechaFormateada = fechaCompletaConHoraSeleccionada(hora)
                                 let response = try await createTurno(
                                     scheduledDate: fechaFormateada,
-                                    prescriptionId: "RA001",
-                                    comentariosReceta: "",
+                                    prescriptionId: numeroReceta,
+                                    comentariosReceta: comentario,
                                     usrId: idusuario
                                 )
                                 alertMessage = "Turno creado con ID \(response.newTurnoId)"
@@ -109,10 +129,8 @@ struct TurnoView: View {
             }
             .presentationDetents([.fraction(0.35)])
         }
-        // 👇 ALERTA MODIFICADA
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {
-                // Si la operación fue exitosa, navega de regreso al dashboard
                 if alertTitle == "Turno Creado" {
                     router.selected = .dashboard
                     router.popToRoot(.dashboard)
@@ -125,6 +143,11 @@ struct TurnoView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navBarStyleGray()
     }
+    
+    private func isRecetaValida(_ texto: String) -> Bool {
+            texto.range(of: #"^R\d+$"#, options: .regularExpression) != nil
+        }
+
     
     @ViewBuilder
     private func sectionLabel(_ text: String) -> some View {

@@ -11,32 +11,33 @@ struct DashboardUserView: View {
     @Binding var idusuario: Int
     @Binding var TurnoId: Int?
     @Binding var turnos: [Turn]
-    
+
     @State private var activeAlert: ActiveAlert?
+    
     @State private var turno: UsuarioTurnosAdelante? = nil
     @State private var errorMessage: String? = nil
     @State private var successMessage: String? = nil
+    @State private var showCancelarDialog = false
     @EnvironmentObject var router: Router
-    
+
     var body: some View {
         ZStack {
             Color(UIColor.systemGray6).ignoresSafeArea()
-            
+
             VStack(spacing: 32) {
                 EncabezadoUser(usuario: usuario).padding(.top, 48)
-                
+
                 VStack(spacing: 20) {
-                    // Card
                     VStack(spacing: 16) {
                         Text("Tu turno")
                             .font(.title.weight(.semibold))
                             .foregroundStyle(.white.opacity(0.9))
-                        
+
                         Text(TurnoId.map { "\($0)" } ?? "-")
                             .font(.system(size: 70, weight: .heavy, design: .rounded))
                             .monospacedDigit()
                             .foregroundStyle(.white)
-                        
+
                         Text("Faltan \(turno?.turnosAhead ?? 0) turnos por delante")
                             .font(.title3.weight(.medium))
                             .foregroundStyle(.white)
@@ -52,21 +53,26 @@ struct DashboardUserView: View {
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 28))
                     .shadow(color: .black.opacity(0.15), radius: 16, x: 0, y: 8)
-                    
-                    // Buttons
+
                     VStack(spacing: 18) {
                         BotonPrincipal(title: "Pedir Turno") {
                             router.selected = .turno
                             router.popToRoot(.turno)
                         }
                         .disabled(TurnoId != nil)
-                        
+
                         BotonPrincipal(title: "Ver Hora Pico") {
                             router.selected = .hora
                             router.popToRoot(.hora)
                         }
-                        
-                        Button(action: { activeAlert = .cancelar }) {
+
+                        Button(action:{
+                            if TurnoId == nil {
+                            errorMessage = "No tienes un turno activo para cancelar."
+                            activeAlert = .mensaje
+                        } else {
+                            activeAlert = .cancelar
+                        } }) {
                             Text("Cancelar Turno")
                                 .font(.system(size: 24, weight: .bold))
                                 .frame(maxWidth: .infinity, minHeight: 40)
@@ -74,8 +80,8 @@ struct DashboardUserView: View {
                         .buttonStyle(.bordered)
                         .tint(Color.marca)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
-                        
-                        // Bottom row: only logout on the right
+
+                        // Botón de cerrar sesión
                         HStack {
                             Spacer()
                             Button(action: { activeAlert = .salir }) {
@@ -89,12 +95,10 @@ struct DashboardUserView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
-                    
+
                     Spacer()
                 }
                 .padding(.horizontal, 24)
-                
-                Spacer()
             }
             .background(Color.white)
         }
@@ -104,35 +108,16 @@ struct DashboardUserView: View {
             switch alert {
             case .cancelar:
                 return Alert(
-                    title: Text("¿Seguro?"),
-                    message: Text("¿Quieres cancelar tu turno?"),
+                    title: Text("¿Quieres cancelar tu turno?"),
+                    message: Text("¿Por que desea cancelar?"),
                     primaryButton: .destructive(Text("Continuar")) {
                         Task {
-                            do {
-                                if let id = TurnoId {
-                                    let response = try await cancelTurno(turnoescogido: id)
-                                    successMessage = response.formatted
-                                    let nuevosTurnos = try await fetchUserTurns(userId: idusuario)
-                                    let nuevoTurno: UsuarioTurnosAdelante? =
-                                        if let primero = nuevosTurnos.first {
-                                            try await fetchTurnosAdelante(IddeTurnos: primero.IDTurno)
-                                        } else { nil }
-                                    turnos = nuevosTurnos
-                                    turno = nuevoTurno
-                                    activeAlert = .mensaje
-                                } else {
-                                    successMessage = "No se encontró un turno para cancelar."
-                                    activeAlert = .mensaje
-                                }
-                            } catch {
-                                errorMessage = "Error de conexión al servidor."
-                                activeAlert = .mensaje
-                                print("🔎 Nuevos turnos:", turnos)
-                            }
+                            showCancelarDialog = true
                         }
                     },
                     secondaryButton: .cancel()
                 )
+
             case .salir:
                 return Alert(
                     title: Text("¿Seguro?"),
@@ -144,6 +129,7 @@ struct DashboardUserView: View {
                     },
                     secondaryButton: .cancel()
                 )
+
             case .mensaje:
                 return Alert(
                     title: Text("Aviso"),
@@ -156,16 +142,77 @@ struct DashboardUserView: View {
             }
         }
         .navBarStyleGray()
-        .task {
-            do {
-                turnos = try await fetchUserTurns(userId: idusuario)
-            } catch {
-                errorMessage = "No se pudieron obtener los turnos."
+        .confirmationDialog("¿Por qué desea cancelar?",
+                            isPresented: $showCancelarDialog,
+                            titleVisibility: .visible) {
+            if let cancelid = TurnoId {
+                Button("Ya no necesito el medicamento") {
+                    print("Intentando cancelar \(cancelid)")
+
+                    Task {
+                        do {
+                            let response = try await cancelTurno(turnoescogido: cancelid, comentario: "Ya no necesito el medicamento")
+                            print("✅ \(response.formatted)")
+                            await MainActor.run {
+                                            router.necesitaActualizarTurnos = true
+                                            TurnoId = nil
+                                        }
+                        } catch {
+                            print("❌ Error al cancelar: \(error)")
+                        }
+                    }
+                }
+                Button("Error al agendar el turno") {
+                    Task {
+                        do {
+                            let response = try await cancelTurno(turnoescogido: cancelid, comentario: "Error al agendar el turno")
+                            print("✅ \(response.formatted)")
+                            await MainActor.run {
+                                            router.necesitaActualizarTurnos = true
+                                            TurnoId = nil
+                                        }
+                        } catch {
+                            print("❌ Error al cancelar: \(error)")
+                        }
+                    }
+                }
+                Button("Motivos personales") {
+                    Task {
+                        do {
+                            let response = try await cancelTurno(turnoescogido: cancelid, comentario: "Motivos personales")
+                            print("✅ \(response.formatted)")
+                            await MainActor.run {
+                                            router.necesitaActualizarTurnos = true
+                                            TurnoId = nil
+                                        }
+                        } catch {
+                            print("❌ Error al cancelar: \(error)")
+                        }
+                    }
+                }
+                Button("Otro") {
+                    Task {
+                        do {
+                            let response = try await cancelTurno(turnoescogido: cancelid, comentario: "Otro")
+                            print("✅ \(response.formatted)")
+                            await MainActor.run {
+                                            router.necesitaActualizarTurnos = true
+                                            TurnoId = nil
+                                        }
+                        } catch {
+                            print("❌ Error al cancelar: \(error)")
+                        }
+                    }
+                }
+                
+            } else {
+                Button("No hay turno activo", role: .cancel) { }
             }
+
+            Button("Cancelar", role: .cancel) { }
         }
     }
 }
-
 #Preview {
     DashboardUserView(
         usuario: .constant("marcoramos"),
@@ -175,8 +222,7 @@ struct DashboardUserView: View {
         turnos: .constant([
                     Turn(IDTurno: 12),
                     Turn(IDTurno: 13),
-                    Turn(IDTurno: 14)
-        ])
+                    Turn(IDTurno: 14)])
     )
     .environmentObject(Router())
 }

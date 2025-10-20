@@ -152,31 +152,44 @@ struct CancelResponse: Codable {
     }
 }
 
-
-
 extension CancelResponse {
     var formatted: String {
         "\(mensaje)"
     }
 }
 
-
-func cancelTurno(turnoescogido: Int) async throws -> CancelResponse {
+func cancelTurno(turnoescogido: Int, comentario: String) async throws -> CancelResponse {
     guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/turnos/\(turnoescogido)/cancel") else {
         throw URLError(.badURL)
     }
-    
+
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
+    let body: [String: String] = ["comentario": comentario]
+    request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+
     let (data, response) = try await URLSession.shared.data(for: request)
-    
-    guard let httpResponse = response as? HTTPURLResponse,
-          200..<300 ~= httpResponse.statusCode else {
+
+    guard let httpResponse = response as? HTTPURLResponse else {
         throw URLError(.badServerResponse)
     }
-    
+
+    // 🔍 DEBUG: imprime toda la respuesta para inspección
+    print("📡 CancelTurno → HTTP \(httpResponse.statusCode)")
+    if let bodyText = String(data: data, encoding: .utf8) {
+        print("🧾 Respuesta del servidor:\n\(bodyText)")
+    }
+
+    guard 200..<300 ~= httpResponse.statusCode else {
+        // Si el backend manda un mensaje de error JSON, lo decodificamos
+        if let apiError = try? JSONDecoder().decode(CancelResponse.self, from: data) {
+            print("⚠️ Error del backend: \(apiError.mensaje)")
+        }
+        throw URLError(.badServerResponse)
+    }
+
     return try JSONDecoder().decode(CancelResponse.self, from: data)
 }
 
@@ -261,7 +274,7 @@ func createTurno(
     return try decoder.decode(CreateTurnoResponse.self, from: data)
 }
 
-struct Turn: Codable {
+struct Turn: Codable,Equatable {
     let IDTurno: Int
 
     enum CodingKeys: String, CodingKey {
@@ -284,25 +297,60 @@ func fetchUserTurns(userId: Int) async throws -> [Turn] {
     return decoded
 }
 
-// MARK: - Función para traer las ubicaciones desde la API
-//func fetchLocationsList() async throws -> [LocationsList] {
-//    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/locations") else {
-//        throw URLError(.badURL)
-//    }
-//
-//    let (data, _) = try await URLSession.shared.data(from: url)
-//    let decoder = JSONDecoder()
-//    return try decoder.decode([LocationsList].self, from: data)
-//}
 
 func fetchLocationsList() async throws -> [LocationsList] {
-    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/locations")
-    else { throw URLError(.badURL) }
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/locations") else {
+       throw URLError(.badURL)
+    }
 
     let (data, _) = try await URLSession.shared.data(from: url)
     let decoder = JSONDecoder()
     return try decoder.decode([LocationsList].self, from: data)
 }
+struct HistorialUs: Codable, Identifiable {
+    let id = UUID()
+    let clientehistorialID: String
+    let recetahistorialID: String
+    let horadeFin: Date
+
+    enum CodingKeys: String, CodingKey {
+        case clientehistorialID = "PacienteName"
+        case recetahistorialID = "Perscription_Id"
+        case horadeFin = "End_Time"
+    }
+}
+
+func fetchHistorialUsuario(fecha: Date, usuarioId: Int) async throws -> [HistorialUs] {
+    let urlDateFormatter = DateFormatter()
+    urlDateFormatter.dateFormat = "yyyy-MM-dd"
+    let fechaString = urlDateFormatter.string(from: fecha)
+
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/usuario/\(usuarioId)/history?fecha=\(fechaString)") else {
+        throw URLError(.badURL)
+    }
+
+    let (data, _) = try await URLSession.shared.data(from: url)
+
+    let decoder = JSONDecoder()
+    let apiDateFormatter = DateFormatter()
+    apiDateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    apiDateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
+    decoder.dateDecodingStrategy = .formatted(apiDateFormatter)
+
+    return try decoder.decode([HistorialUs].self, from: data)
+}
+
+
+//>>>>>>> Stashed changes
+
+//func fetchLocationsList() async throws -> [LocationsList] {
+//    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/locations")
+//    else { throw URLError(.badURL) }
+
+  //  let (data, _) = try await URLSession.shared.data(from: url)
+   // let decoder = JSONDecoder()
+    //return try decoder.decode([LocationsList].self, from: data)
+//}
 
 
 

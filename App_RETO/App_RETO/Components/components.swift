@@ -240,6 +240,7 @@ struct TurnosChartView: View {
         VStack {
             Text("Turnos por hora")
                 .font(.title2).bold()
+                .padding(.top,5)
             Text("(\(formattedDate))")
                 .padding(.bottom, 5)
                 
@@ -249,6 +250,7 @@ struct TurnosChartView: View {
                     Text("Turnos")
                         .rotationEffect(Angle(degrees: -90))
                     
+                    let maxYValue = groupedByHour.map { $0.count }.max() ?? 0                    
                     Chart {
                         ForEach(groupedByHour, id: \.hour) { item in
                             BarMark(
@@ -256,6 +258,7 @@ struct TurnosChartView: View {
                                 y: .value("Cantidad", item.count)
                             )
                             .foregroundStyle(isAccessible(hour: item.hour) ? Color.acento.gradient : Color.marca.gradient)
+                            
                         }
                         
                         
@@ -271,6 +274,7 @@ struct TurnosChartView: View {
                                 }
                         }
                     }
+                    .chartYScale(domain: 0...(Double(maxYValue) * 1.1))
                     .frame(width: 24 * 50, height: 200)
                 }
                 
@@ -278,6 +282,7 @@ struct TurnosChartView: View {
                 .padding()
             
             Text("Horas de servicio")
+                .padding(.bottom, 20)
         }
     }
 }
@@ -325,4 +330,6 @@ func fechaCompletaConHoraSeleccionada(_ horaSeleccionada: Date) -> String {
 
     return formatter.string(from: fechaFinal)
 }
+
+
 

@@ -35,12 +35,7 @@ struct VerTurnoView: View {
                         .monospacedDigit()
                         .foregroundStyle(.orange)
 
-                    Spacer(minLength: 2)
-
-                    BotonPrincipal(title: "Regresar") {
-                        router.selected = .dashboard
-                        router.popToRoot(.dashboard)
-                    }
+                    
                     
 
                    
