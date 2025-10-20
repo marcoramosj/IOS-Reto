@@ -18,7 +18,7 @@ fileprivate struct DialDestination: Identifiable, Equatable {
 
 struct UserCallView: View {
     // You said you already keep these:
-    @State private var idUsuario: Int = 1
+    @Binding var idusuario: Int
     @State private var actividadContactos: [Activity] = []      // /api/activities/{caller_id}
     @State private var listaContactos: [ListaContactos] = []    // /api/contactos
 
@@ -189,7 +189,7 @@ struct UserCallView: View {
     private func loadHistory() async {
         await MainActor.run { loadingHistory = true; historyError = nil }
         do {
-            let acts = try await fetchActivities(for: idUsuario)
+            let acts = try await fetchActivities(for: idusuario)
             await MainActor.run {
                 actividadContactos = acts
                 loadingHistory = false
@@ -218,7 +218,7 @@ struct UserCallView: View {
 
     private func logAndRefresh(_ d: DialDestination) async {
         do {
-            let req = HistorialContactoRequest(callerId: idUsuario,
+            let req = HistorialContactoRequest(callerId: idusuario,
                                                contactoId: d.id,
                                                tipoContacto: "Llamada")
             _ = try await postHistorialContacto(req)
@@ -240,4 +240,4 @@ struct UserCallView: View {
     }
 }
 
-#Preview { UserCallView() }
+#Preview { UserCallView(idusuario: .constant(8)) }

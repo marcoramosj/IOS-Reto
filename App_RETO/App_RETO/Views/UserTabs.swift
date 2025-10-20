@@ -52,7 +52,7 @@ struct UserTabs: View {
             .tag(TabID.Map)
             
             NavigationStack(path: $router.pathCall) {
-                UserCallView()
+                UserCallView(idusuario: $idusuario)
             }
             .tabItem { Label("Llamada", systemImage: "phone") }
             .tag(TabID.Call)
@@ -114,7 +114,3 @@ struct UserTabs: View {
         }.value // <- importante: espera el resultado de la tarea detachada
     }
 }
-
-    #Preview {
-        UserCallView()
-    }
