@@ -9,51 +9,55 @@
 
 import SwiftUI
 
+// Local model for the picker (renamed to avoid collisions)
+fileprivate struct DialDestination: Identifiable, Equatable {
+    let id: Int          // Contacto_Id
+    let name: String     // Display name
+    let number: String   // Phone to dial
+}
+
 struct UserCallView: View {
-    // MARK: - Env
+    // You said you already keep these:
+    @State private var idUsuario: Int = 1
+    @State private var actividadContactos: [Activity] = []      // /api/activities/{caller_id}
+    @State private var listaContactos: [ListaContactos] = []    // /api/contactos
+
     @Environment(\.scenePhase) private var scenePhase
 
-    // MARK: - State
-    @State private var calls: [CallRecord] = []
-    @State private var isLoading = false
-    @State private var errorMessage: String?
-
-    @State private var showDeleteAlert = false
-    @State private var callToDelete: CallRecord?
-
-    // MARK: - Picker data from backend
-    @State private var destinations: [ActivityAPIRow] = []
+    // Picker state
+    @State private var destinos: [DialDestination] = []
     @State private var selectedIndex: Int? = nil
-    @State private var isLoadingDestinations = false
-    @State private var destinationsError: String?
+    @State private var loadingDestinos = false
+    @State private var destinosError: String?
 
-    // Remember intent to log after returning from Phone
-    @State private var pendingLog: (name: String, number: String)? = nil
+    // History state
+    @State private var loadingHistory = false
+    @State private var historyError: String?
 
-    // Your signed-in user id
-    private let userId = 1
+    // Remember what to log after returning from Phone
+    @State private var pendingDestino: DialDestination?
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 12) {
+            VStack(spacing: 14) {
 
-                // MARK: Dropdown Card (drives from `destinations`)
+                // MARK: Picker
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Selecciona destino:")
                         .font(.headline)
                         .padding(.horizontal)
 
                     Menu {
-                        if destinations.isEmpty {
-                            Button("Sin datos") { }.disabled(true)
+                        if destinos.isEmpty {
+                            Button("Sin datos"){}.disabled(true)
                         } else {
-                            ForEach(destinations.indices, id: \.self) { i in
-                                Button(destinations[i].name) { selectedIndex = i }
+                            ForEach(destinos.indices, id: \.self) { i in
+                                Button(destinos[i].name) { selectedIndex = i }
                             }
                         }
                     } label: {
                         HStack {
-                            Text(selectedIndex.flatMap { destinations[$0].name } ?? "Selecciona un destino")
+                            Text(selectedIndex.flatMap { destinos[$0].name } ?? "Selecciona un destino")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.primary)
                             Spacer()
@@ -62,198 +66,177 @@ struct UserCallView: View {
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(Color(.secondarySystemGroupedBackground))
-                        .cornerRadius(10)
-                        .shadow(radius: 1)
-                        .padding(.horizontal)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 16)
                     }
-                }
 
-                // "Llamar" button
-                Button { callTapped() } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "phone.fill")
-                        Text("Llamar")
-                        Spacer()
+                    Button(action: callTapped) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "phone.fill")
+                            Text("Llamar")
+                            Spacer()
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
                     }
-                    .padding(.vertical, 12)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemGroupedBackground)))
                     .padding(.horizontal, 16)
+                    .disabled(selectedIndex == nil || destinos.isEmpty)
                 }
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.secondarySystemGroupedBackground))
-                )
-                .padding(.horizontal)
-                .disabled(selectedIndex == nil || destinations.isEmpty)
 
-                if isLoadingDestinations {
+                // Picker error/loading
+                if loadingDestinos {
                     ProgressView("Cargando destinos…").padding(.horizontal)
-                } else if let dErr = destinationsError {
-                    Text("Error al cargar destinos: \(dErr)")
+                } else if let err = destinosError {
+                    Text("Error al cargar destinos: \(err)")
                         .foregroundStyle(.red)
                         .padding(.horizontal)
                         .multilineTextAlignment(.center)
                 }
 
-                content
+                // MARK: History
+                Group {
+                    if loadingHistory {
+                        ProgressView("Cargando historial…").padding(.top, 8)
+                    } else if let hErr = historyError {
+                        Text(hErr)
+                            .foregroundStyle(.red)
+                            .padding(.horizontal)
+                            .multilineTextAlignment(.center)
+                    } else {
+                        List {
+                            Section("Historial de contactos") {
+                                ForEach(actividadContactos) { a in
+                                    historyRow(a)
+                                }
+                            }
+                        }
+                        .listStyle(.insetGrouped)
+                        .refreshable { await loadHistory() }
+                    }
+                }
             }
             .navigationTitle("Llamada")
             .background(Color(.systemGroupedBackground))
             .task {
-                await loadDestinations()
-                await loadCalls()
+                await loadDestinos()
+                await loadHistory()
             }
-            .alert("Eliminar llamada", isPresented: $showDeleteAlert) {
-                Button("Cancelar", role: .cancel) { callToDelete = nil }
-                Button("Eliminar", role: .destructive) {
-                    if let call = callToDelete {
-                        Task { await deleteCall(call) }
-                    }
-                }
-            } message: {
-                if let call = callToDelete {
-                    Text("¿Seguro que quieres eliminar la llamada con \(call.name)?")
-                } else {
-                    Text("¿Seguro que quieres eliminar esta llamada?")
-                }
-            }
-            .onChange(of: scenePhase) { _, newPhase in
-                guard newPhase == .active, let toLog = pendingLog else { return }
-                pendingLog = nil
-                Task { await logAndRefresh(name: toLog.name, number: toLog.number) }
+            // Single-argument version for your toolchain
+            .onChange(of: scenePhase) { newPhase in
+                guard newPhase == .active, let d = pendingDestino else { return }
+                pendingDestino = nil
+                Task { await logAndRefresh(d) }
             }
         }
     }
 
-    // MARK: - Extracted content
+    // MARK: UI Row
     @ViewBuilder
-    private var content: some View {
-        if isLoading {
-            ProgressView("Cargando llamadas…").padding(.top, 40)
-        } else if let err = errorMessage {
-            Text(err)
-                .foregroundStyle(.red)
-                .padding(.horizontal)
-                .multilineTextAlignment(.center)
-        } else {
-            List {
-                Section("Historial de llamadas") {
-                    ForEach(calls) { call in
-                        row(call)
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    callToDelete = call
-                                    showDeleteAlert = true
-                                } label: {
-                                    Label("Eliminar", systemImage: "trash").tint(.red)
-                                }
-                            }
-                    }
+    private func historyRow(_ a: Activity) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(a.contactoNombreCompleto).font(.headline)
+            Text(a.fechaContacto).font(.subheadline).foregroundColor(.secondary)
+            HStack(spacing: 8) {
+                Text(a.tipoContacto).font(.caption)
+                if !a.numeroLlamado.isEmpty {
+                    Text(a.numeroLlamado).font(.caption2).foregroundColor(.secondary)
                 }
-            }
-            .listStyle(.insetGrouped)
-            .refreshable { await loadCalls() }
-        }
-    }
-
-    // MARK: - Row cell
-    @ViewBuilder
-    private func row(_ call: CallRecord) -> some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(call.name).font(.headline)
-                Text(call.date).font(.subheadline).foregroundColor(.gray)
-            }
-            Spacer()
-            if !call.duration.isEmpty {
-                Text(call.duration).font(.caption).foregroundColor(.blue)
             }
         }
         .padding(.vertical, 4)
     }
 
-    // MARK: - Actions
+    // MARK: Data Loading
 
-    /// Load the destinations for the picker from GET /api/activities/{caller_id}
-    private func loadDestinations() async {
-        await MainActor.run { isLoadingDestinations = true; destinationsError = nil }
+    /// 🔁 Picker now loads ONLY from GET /api/contactos
+    private func loadDestinos() async {
+        await MainActor.run { loadingDestinos = true; destinosError = nil }
         do {
-            let rows = try await fetchCallDestinations(callerId: userId)
+            // Always fetch /api/contactos for the picker
+            listaContactos = try await fetchListaContactos()
 
-            // De-duplicate by (name, number) while keeping order
-            var seen = Set<String>()
-            let uniqueRows = rows.filter { row in
-                let key = "\(row.name)|\(row.number)"
-                if seen.contains(key) { return false }
-                seen.insert(key)
-                return true
+            // Map -> DialDestination, skip contacts without phone
+            var items: [DialDestination] = listaContactos.compactMap { c in
+                let phone = c.telefono.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !phone.isEmpty else { return nil }
+                let full = displayName(for: c)
+                return DialDestination(id: c.id, name: full, number: phone)
             }
 
+            // De-duplicate by phone (keep first)
+            var seen = Set<String>()
+            items = items.filter { seen.insert($0.number).inserted }
+
+            // Sort alphabetically
+            items.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+
             await MainActor.run {
-                self.destinations = uniqueRows
-                self.selectedIndex = uniqueRows.isEmpty ? nil : 0
-                self.isLoadingDestinations = false
+                destinos = items
+                selectedIndex = items.isEmpty ? nil : 0
+                loadingDestinos = false
             }
         } catch {
             await MainActor.run {
-                self.isLoadingDestinations = false
-                self.destinationsError = error.localizedDescription
-                self.destinations = []
-                self.selectedIndex = nil
+                destinosError = error.localizedDescription
+                destinos = []
+                selectedIndex = nil
+                loadingDestinos = false
             }
         }
     }
 
-    /// User tapped "Llamar": open dialer and mark intent to log later
-    private func callTapped() {
-        guard let idx = selectedIndex, destinations.indices.contains(idx) else { return }
-        let d = destinations[idx]
-        pendingLog = (d.name, d.number)
+    private func loadHistory() async {
+        await MainActor.run { loadingHistory = true; historyError = nil }
+        do {
+            let acts = try await fetchActivities(for: idUsuario)
+            await MainActor.run {
+                actividadContactos = acts
+                loadingHistory = false
+            }
+        } catch {
+            await MainActor.run {
+                historyError = "Error al cargar llamadas: \(error.localizedDescription)"
+                actividadContactos = []
+                loadingHistory = false
+            }
+        }
+    }
 
-        // NOTE: tel:// does not open on the iOS Simulator – test on a real device.
+    // MARK: Actions
+
+    private func callTapped() {
+        guard let idx = selectedIndex, destinos.indices.contains(idx) else { return }
+        let d = destinos[idx]
+        pendingDestino = d
+
+        // tel:// won't open on Simulator
         if let url = URL(string: "tel://\(d.number)") {
             UIApplication.shared.open(url)
         }
     }
 
-    /// After returning to app: POST to /api/historial-contacto and then reload history
-    private func logAndRefresh(name: String, number: String) async {
+    private func logAndRefresh(_ d: DialDestination) async {
         do {
-            try await createHistorialContacto(callerId: userId, name: name, number: number, startedAt: Date())
-            await loadCalls()
+            let req = HistorialContactoRequest(callerId: idUsuario,
+                                               contactoId: d.id,
+                                               tipoContacto: "Llamada")
+            _ = try await postHistorialContacto(req)
+            await loadHistory()
         } catch {
             await MainActor.run {
-                errorMessage = "No se pudo registrar la llamada: \(error.localizedDescription)"
+                historyError = "No se pudo registrar la llamada: \(error.localizedDescription)"
             }
         }
     }
 
-    private func loadCalls() async {
-        await MainActor.run { isLoading = true; errorMessage = nil }
-        do {
-            let list = try await loadUserCallsForUI(userId: userId)
-            await MainActor.run {
-                calls = list
-                isLoading = false
-            }
-        } catch {
-            await MainActor.run {
-                errorMessage = "Error al cargar llamadas: \(error.localizedDescription)"
-                isLoading = false
-            }
-        }
-    }
+    // MARK: Helpers
 
-    private func deleteCall(_ call: CallRecord) async {
-        do {
-            try await deleteCallFromUI(userId: userId, call: call)
-            await MainActor.run {
-                withAnimation { calls.removeAll { $0.id == call.id } }
-            }
-        } catch {
-            await MainActor.run {
-                errorMessage = "No se pudo eliminar la llamada: \(error.localizedDescription)"
-            }
-        }
+    private func displayName(for c: ListaContactos) -> String {
+        [c.name, c.middleName, c.lastName, c.lastName1]
+            .compactMap { $0 }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
     }
 }
 

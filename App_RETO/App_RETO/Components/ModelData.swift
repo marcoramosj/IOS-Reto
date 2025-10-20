@@ -97,7 +97,7 @@ let rfc1123Formatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
     formatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
-    formatter.timeZone = TimeZone(secondsFromGMT: 0) 
+    formatter.timeZone = TimeZone(secondsFromGMT: 0)
     return formatter
 }()
 
@@ -197,7 +197,7 @@ struct CreateTurnoResponse: Codable {
 //    let latitude: String
 //    let longitude: String
 //    let locationName: String
-//    
+//
 //    enum CodingKeys: String, CodingKey{
 //        case latitude = "latitude"
 //        case longitude = "longitude"
@@ -289,7 +289,7 @@ func fetchUserTurns(userId: Int) async throws -> [Turn] {
 //    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/locations") else {
 //        throw URLError(.badURL)
 //    }
-//    
+//
 //    let (data, _) = try await URLSession.shared.data(from: url)
 //    let decoder = JSONDecoder()
 //    return try decoder.decode([LocationsList].self, from: data)
@@ -307,7 +307,7 @@ func fetchLocationsList() async throws -> [LocationsList] {
 
 
 
-
+/*
 // MARK: - UI Model
 struct CallRecord: Identifiable, Equatable {
     let id: Int
@@ -645,5 +645,117 @@ func createHistorialContacto(callerId: Int, name: String, number: String, starte
     let (_, resp) = try await URLSession.shared.data(for: req)
     guard let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
         throw HTTPError(status: (resp as? HTTPURLResponse)?.statusCode ?? -1, body: "POST /api/historial-contacto failed")
+    }
+}
+
+ */
+
+// MARK: - For /api/activities/{caller_id}
+struct Activity: Codable, Identifiable {
+    let id: Int
+    let contactoId: Int
+    let contactoNombreCompleto: String
+    let fechaContacto: String
+    let llamador: String
+    let numeroLlamado: String
+    let tipoContacto: String
+
+    enum CodingKeys: String, CodingKey {
+        case id = "Historial_Id"
+        case contactoId = "Contacto_Id"
+        case contactoNombreCompleto = "Contacto_NombreCompleto"
+        case fechaContacto = "Fecha_Contacto"
+        case llamador = "Llamador"
+        case numeroLlamado = "Numero_Llamado"
+        case tipoContacto = "Tipo_Contacto"
+    }
+}
+
+// MARK: - For /api/contactos
+struct ListaContactos: Codable, Identifiable {
+    let id: Int
+    let name: String
+    let middleName: String?
+    let lastName: String?
+    let lastName1: String?
+    let telefono: String
+    let correo: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id = "Id"
+        case name = "Name"
+        case middleName = "Middle_Name"
+        case lastName = "Last_Name"
+        case lastName1 = "LastName1"
+        case telefono = "Telefono"
+        case correo = "Correo"
+    }
+}
+
+// MARK: - For /api/historial-contacto
+struct HistorialContactoRequest: Codable {
+    let callerId: Int
+    let contactoId: Int
+    let tipoContacto: String
+
+    enum CodingKeys: String, CodingKey {
+        case callerId = "Caller_Id"
+        case contactoId = "Contacto_Id"
+        case tipoContacto = "Tipo_Contacto"
+    }
+}
+
+
+// MARK: - Función para traer actividades por Caller_Id desde la API
+func fetchActivities(for callerId: Int) async throws -> [Activity] {
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/api/activities/\(callerId)") else {
+        throw URLError(.badURL)
+    }
+    
+    let (data, _) = try await URLSession.shared.data(from: url)
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .iso8601
+    return try decoder.decode([Activity].self, from: data)
+}
+
+// MARK: - Función para traer los Contactos desde la API
+func fetchListaContactos() async throws -> [ListaContactos] {
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/api/contactos") else {
+        throw URLError(.badURL)
+    }
+    
+    let (data, _) = try await URLSession.shared.data(from: url)
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .iso8601
+    return try decoder.decode([ListaContactos].self, from: data)
+}
+
+
+// MARK: - POST request to insert new contact history record
+func postHistorialContacto(_ request: HistorialContactoRequest) async throws -> Bool {
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/api/historial-contacto") else {
+        throw URLError(.badURL)
+    }
+    
+    var urlRequest = URLRequest(url: url)
+    urlRequest.httpMethod = "POST"
+    urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+    let encoder = JSONEncoder()
+    urlRequest.httpBody = try encoder.encode(request)
+    
+    let (data, response) = try await URLSession.shared.data(for: urlRequest)
+    
+    guard let httpResponse = response as? HTTPURLResponse else {
+        throw URLError(.badServerResponse)
+    }
+
+    // Optional: check status code (e.g., 200 or 201)
+    if httpResponse.statusCode == 200 || httpResponse.statusCode == 201 {
+        print("Contacto registrado correctamente.")
+        return true
+    } else {
+        print("Error \(httpResponse.statusCode): \(String(data: data, encoding: .utf8) ?? "Unknown error")")
+        return false
     }
 }
