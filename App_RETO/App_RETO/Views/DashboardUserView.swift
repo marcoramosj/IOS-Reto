@@ -220,9 +220,9 @@ struct DashboardUserView: View {
         idusuario: .constant(8),
         TurnoId: .constant(12),
         turnos: .constant([
-                    Turn(IDTurno: 12),
-                    Turn(IDTurno: 13),
-                    Turn(IDTurno: 14)])
+                    Turn(IDTurno: 12, VentanillaId: 01),
+                    Turn(IDTurno: 13, VentanillaId: 02),
+                    Turn(IDTurno: 14,VentanillaId: 03)])
     )
     .environmentObject(Router())
 }

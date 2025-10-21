@@ -4,10 +4,13 @@ struct VerTurnoView: View {
     @Binding var usuario: String
     @Binding var loggedIn: Bool
     @Binding var TurnoId: Int?
-    @Binding var turnos: [Turn]
+    @State private var ventanillaAsignada: Int?
+    @State private var cargando = false
+    @State private var error: String?
+    @State private var mensaje: String?
     
     @EnvironmentObject var router: Router
-
+    
     var body: some View {
         VStack(spacing: 24) {
             ScrollView {
@@ -17,28 +20,36 @@ struct VerTurnoView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 215)
                         .padding(.top, 80)
-
-                    Text("Tu turno:")
-                        .font(.title).fontWeight(.bold).foregroundStyle(.gray)
                     
-
+                    Text("Tu turno:")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.gray)
+                    
                     Text(TurnoId.map { "\($0)" } ?? "-")
                         .font(.system(size: 72, weight: .heavy, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(.orange)
-
+                    
                     Text("Ventanilla:")
-                        .font(.title).fontWeight(.bold).foregroundStyle(.gray)
-
-                    Text("03")
-                        .font(.system(size: 64, weight: .heavy, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(.orange)
-
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.gray)
                     
+                    if cargando {
+                        ProgressView("Iniciando servicio...")
+                            .padding()
+                    } else if let vent = ventanillaAsignada {
+                        Text("\(vent)")
+                            .font(.system(size: 64, weight: .heavy, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(.orange)
+                    } else {
+                        Text("-")
+                            .font(.system(size: 64, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.gray)
+                    }
                     
-
-                   
                 }
                 .padding(AppTheme.padding)
             }
@@ -46,11 +57,11 @@ struct VerTurnoView: View {
         .background(Color.white)
         .navigationTitle("Ver turno")
         .navigationBarTitleDisplayMode(.inline)
-        .navBarStyleGray()
+        
     }
+    
+    
 }
-
 #Preview {
-    VerTurnoView(usuario: .constant("Mario"), loggedIn:.constant(true), TurnoId: .constant(12),turnos: .constant([ Turn(IDTurno: 12),Turn(IDTurno: 13),Turn(IDTurno: 14)
-                 ]) )
+    VerTurnoView(usuario: .constant("Mario"), loggedIn: .constant(true), TurnoId: .constant(nil))
 }

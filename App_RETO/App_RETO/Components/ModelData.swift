@@ -260,11 +260,14 @@ func createTurno(
     return try decoder.decode(CreateTurnoResponse.self, from: data)
 }
 
-struct Turn: Codable,Equatable {
+struct Turn: Codable, Equatable, Identifiable {
+    var id: Int { IDTurno }
     let IDTurno: Int
+    let VentanillaId: Int?
 
     enum CodingKeys: String, CodingKey {
         case IDTurno = "Id"
+        case VentanillaId = "Ventanilla_Id"
     }
 }
 
@@ -517,4 +520,56 @@ func fetchLogin(username: String, password: String) async throws -> UsuarioLogin
     guard response is HTTPURLResponse else { throw URLError(.badServerResponse) }
 
     return try JSONDecoder().decode(UsuarioLogin.self, from: data)
+}
+
+
+struct StartServiceResponse: Codable {
+    let message: String
+    let turno_id: Int?
+    let ventanilla_id: Int?
+    let emp_id: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case message
+        case turno_id
+        case ventanilla_id
+        case emp_id
+    }
+}
+
+
+
+func startService(ventanillaId: Int) async throws -> StartServiceResponse {
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/service/start") else {
+        throw URLError(.badURL)
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+    // Cuerpo JSON
+    let body: [String: Int] = ["ventanilla_id": ventanillaId]
+    request.httpBody = try JSONEncoder().encode(body)
+
+    // Llamada a la API
+    let (data, response) = try await URLSession.shared.data(for: request)
+
+    guard let httpResponse = response as? HTTPURLResponse else {
+        throw URLError(.badServerResponse)
+    }
+
+    guard (200...299).contains(httpResponse.statusCode) else {
+        // Intenta decodificar un mensaje de error del servidor
+        if let apiError = try? JSONDecoder().decode([String: String].self, from: data),
+           let message = apiError["error"] ?? apiError["message"] {
+            throw NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: message])
+        } else {
+            throw URLError(.cannotParseResponse)
+        }
+    }
+
+    // Decodificar respuesta válida
+    return try JSONDecoder().decode(StartServiceResponse.self, from: data)
 }

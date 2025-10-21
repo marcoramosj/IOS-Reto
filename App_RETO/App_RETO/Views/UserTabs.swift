@@ -45,8 +45,7 @@ struct UserTabs: View {
                 VerTurnoView(
                     usuario: $usuario,
                     loggedIn: $loggedIn,
-                    TurnoId: $turnoId,
-                    turnos: $turnos
+                    TurnoId: $turnoId
                 )
             }
             .tabItem { Label("Ver Turno", systemImage: "list.bullet.rectangle") }
