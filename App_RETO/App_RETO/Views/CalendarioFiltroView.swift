@@ -18,7 +18,6 @@ struct CalendarioFiltroView: View {
     @Environment(\.timeZone) private var timeZone
     @Environment(\.dismiss) private var dismiss
 
-    // Keep previous to detect what was just added
     @State private var previousSelection: Set<DateComponents> = []
 
     var body: some View {
@@ -73,7 +72,6 @@ struct CalendarioFiltroView: View {
             }
             .presentationDetents([.medium, .large])
         }
-        // ---- Enforce the 2-date limit here ----
         .onChange(of: selectedDays) { newValue in
             enforceCap(old: previousSelection, new: newValue)
             previousSelection = selectedDays
@@ -81,19 +79,15 @@ struct CalendarioFiltroView: View {
         .onAppear { previousSelection = selectedDays }
     }
 
-    // MARK: - Limit logic
 
     private func enforceCap(old: Set<DateComponents>, new: Set<DateComponents>) {
         guard new.count > maxSelection else { return }
 
-        // What was just added?
         let added = new.subtracting(old)
         if let justAdded = added.first {
-            // Keep the just-added + the closest existing date to it; drop the farther one(s)
             let justAddedDate = toStartOfDay(justAdded)
             let oldDates = old.compactMap { toStartOfDay($0) }
 
-            // Choose the existing date closest to the new one (good UX for ranges)
             let closest = oldDates.min(by: { abs($0.timeIntervalSince(justAddedDate)) < abs($1.timeIntervalSince(justAddedDate)) })
 
             var keep: [DateComponents] = [justAdded]
@@ -103,13 +97,11 @@ struct CalendarioFiltroView: View {
 
             selectedDays = Set(keep)
         } else {
-            // No clear "added" (e.g., bulk change). Keep the two earliest chronologically.
             let sorted = sortedSelectedDates.prefix(maxSelection)
             selectedDays = Set(sorted.compactMap { toComponents($0) })
         }
     }
 
-    // MARK: - Helpers
 
     private var sortedSelectedDates: [Date] {
         selectedDays

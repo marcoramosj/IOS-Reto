@@ -87,7 +87,6 @@ struct AppointmentHistoryView: View {
                     await cargarHistorial()
                 }
 
-                // 🔹 Botón flotante (sin tocar)
                 VStack(spacing: 18) {
                     FloatingCircleButton(systemName: "calendar") {
                         showFiltroFechas = true

@@ -9,32 +9,27 @@
 
 import SwiftUI
 
-// Local model for the picker (renamed to avoid collisions)
 fileprivate struct DialDestination: Identifiable, Equatable {
-    let id: Int          // Contacto_Id
-    let name: String     // Display name
-    let number: String   // Phone to dial
+    let id: Int
+    let name: String
+    let number: String
 }
 
 struct UserCallView: View {
-    // You said you already keep these:
     @Binding var idusuario: Int
-    @State private var actividadContactos: [Activity] = []      // /api/activities/{caller_id}
-    @State private var listaContactos: [ListaContactos] = []    // /api/contactos
+    @State private var actividadContactos: [Activity] = []
+    @State private var listaContactos: [ListaContactos] = []
 
     @Environment(\.scenePhase) private var scenePhase
 
-    // Picker state
     @State private var destinos: [DialDestination] = []
     @State private var selectedIndex: Int? = nil
     @State private var loadingDestinos = false
     @State private var destinosError: String?
 
-    // History state
     @State private var loadingHistory = false
     @State private var historyError: String?
 
-    // Remember what to log after returning from Phone
     @State private var pendingDestino: DialDestination?
 
     var body: some View {
@@ -84,7 +79,6 @@ struct UserCallView: View {
                     .disabled(selectedIndex == nil || destinos.isEmpty)
                 }
 
-                // Picker error/loading
                 if loadingDestinos {
                     ProgressView("Cargando destinos…").padding(.horizontal)
                 } else if let err = destinosError {
@@ -94,7 +88,6 @@ struct UserCallView: View {
                         .multilineTextAlignment(.center)
                 }
 
-                // MARK: History
                 Group {
                     if loadingHistory {
                         ProgressView("Cargando historial…").padding(.top, 8)
@@ -122,7 +115,6 @@ struct UserCallView: View {
                 await loadDestinos()
                 await loadHistory()
             }
-            // Single-argument version for your toolchain
             .onChange(of: scenePhase) { newPhase in
                 guard newPhase == .active, let d = pendingDestino else { return }
                 pendingDestino = nil
@@ -136,7 +128,6 @@ struct UserCallView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(a.contactoNombreCompleto).font(.headline)
 
-            // ⬅️ Use the helper here
             Text(CoolDate(from: a.fechaContacto))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
@@ -250,11 +241,9 @@ private let niceFormatter: DateFormatter = {
 }()
 
 private func CoolDate(from iso: String) -> String {
-    // Parse with ISO8601DateFormatter
     if let d = isoParser.date(from: iso) {
         return niceFormatter.string(from: d)
     }
-    // Fallback: manually trim microseconds and replace T with space
     let trimmed = iso
         .replacingOccurrences(of: "\\.\\d+", with: "", options: .regularExpression)
         .replacingOccurrences(of: "T", with: " ")

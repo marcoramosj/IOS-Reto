@@ -176,14 +176,10 @@ func cancelTurno(turnoescogido: Int, comentario: String) async throws -> CancelR
         throw URLError(.badServerResponse)
     }
 
-    // 🔍 DEBUG: imprime toda la respuesta para inspección
-    print("📡 CancelTurno → HTTP \(httpResponse.statusCode)")
     if let bodyText = String(data: data, encoding: .utf8) {
-        print("🧾 Respuesta del servidor:\n\(bodyText)")
     }
 
     guard 200..<300 ~= httpResponse.statusCode else {
-        // Si el backend manda un mensaje de error JSON, lo decodificamos
         if let apiError = try? JSONDecoder().decode(CancelResponse.self, from: data) {
             print("⚠️ Error del backend: \(apiError.mensaje)")
         }
@@ -204,19 +200,6 @@ struct CreateTurnoResponse: Codable {
     }
 }
 
-//// MARK: - For /locations
-//struct LocationsList: Codable, Identifiable {
-//    let id = UUID()
-//    let latitude: String
-//    let longitude: String
-//    let locationName: String
-//
-//    enum CodingKeys: String, CodingKey{
-//        case latitude = "latitude"
-//        case longitude = "longitude"
-//        case locationName = "location_name"
-//    }
-//}
 
 struct LocationsList: Codable, Identifiable {
     let id = UUID()
@@ -313,7 +296,6 @@ func fetchLocationsList() async throws -> [LocationsList] {
 
 struct HistorialUs: Codable, Identifiable {
     
-    // Propiedades en Swift (camelCase)
     let id: Int
     let scheduledDate: Date
     let perscriptionId: String
@@ -321,7 +303,6 @@ struct HistorialUs: Codable, Identifiable {
     let status: Bool
     let comentariosCancelacion: String?
     
-    // Mapeo de las claves JSON (de tu API) a las propiedades de Swift
     enum CodingKeys: String, CodingKey {
         case id = "Id"
         case scheduledDate = "Scheduled_Date"
@@ -343,20 +324,16 @@ func fetchHistorialUsuario(usuarioId: Int) async throws -> [HistorialUs] {
     let (data, response) = try await URLSession.shared.data(from: url)
 
    
-    // Verifica código de estado
     guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
         throw URLError(.badServerResponse)
     }
 
-    // Verifica si la respuesta parece HTML (error del servidor)
     if let text = String(data: data, encoding: .utf8), text.lowercased().contains("<html") {
         throw URLError(.cannotParseResponse)
     }
 
-    // --- Configuración del decodificador JSON ---
     let decoder = JSONDecoder()
 
-    // Intenta decodificar diferentes formatos de fecha
     let apiDateFormatter = DateFormatter()
     apiDateFormatter.locale = Locale(identifier: "en_US_POSIX")
     apiDateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
@@ -391,7 +368,6 @@ func fetchHistorialUsuario(usuarioId: Int) async throws -> [HistorialUs] {
         throw DecodingError.dataCorruptedError(in: container, debugDescription: "Formato de fecha no reconocido")
     }
 
-    // --- Decodificación segura ---
     do {
         if let decodedArray = try? decoder.decode([HistorialUs].self, from: data) {
             return decodedArray
@@ -407,10 +383,7 @@ func fetchHistorialUsuario(usuarioId: Int) async throws -> [HistorialUs] {
 
 
 
-//>>>>>>> Stashed changes
 
-
-// MARK: - For /api/activities/{caller_id}
 struct Activity: Codable, Identifiable {
     let id: Int
     let contactoId: Int
@@ -431,7 +404,6 @@ struct Activity: Codable, Identifiable {
     }
 }
 
-// MARK: - For /api/contactos
 struct ListaContactos: Codable, Identifiable {
     let id: Int
     let name: String
@@ -452,7 +424,6 @@ struct ListaContactos: Codable, Identifiable {
     }
 }
 
-// MARK: - For /api/historial-contacto
 struct HistorialContactoRequest: Codable {
     let callerId: Int
     let contactoId: Int
@@ -466,7 +437,6 @@ struct HistorialContactoRequest: Codable {
 }
 
 
-// MARK: - Función para traer actividades por Caller_Id desde la API
 func fetchActivities(for callerId: Int) async throws -> [Activity] {
     guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/api/activities/\(callerId)") else {
         throw URLError(.badURL)
@@ -478,7 +448,6 @@ func fetchActivities(for callerId: Int) async throws -> [Activity] {
     return try decoder.decode([Activity].self, from: data)
 }
 
-// MARK: - Función para traer los Contactos desde la API
 func fetchListaContactos() async throws -> [ListaContactos] {
     guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/api/contactos") else {
         throw URLError(.badURL)
@@ -491,7 +460,6 @@ func fetchListaContactos() async throws -> [ListaContactos] {
 }
 
 
-// MARK: - POST request to insert new contact history record
 func postHistorialContacto(_ request: HistorialContactoRequest) async throws -> Bool {
     guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/api/historial-contacto") else {
         throw URLError(.badURL)
@@ -510,7 +478,6 @@ func postHistorialContacto(_ request: HistorialContactoRequest) async throws -> 
         throw URLError(.badServerResponse)
     }
 
-    // Optional: check status code (e.g., 200 or 201)
     if httpResponse.statusCode == 200 || httpResponse.statusCode == 201 {
         print("Contacto registrado correctamente.")
         return true
@@ -518,4 +485,33 @@ func postHistorialContacto(_ request: HistorialContactoRequest) async throws -> 
         print("Error \(httpResponse.statusCode): \(String(data: data, encoding: .utf8) ?? "Unknown error")")
         return false
     }
+}
+struct UsuarioLogin: Codable {
+    let message: String
+    let username: String?
+
+    enum CodingKeys: String, CodingKey {
+        case message
+        case username
+    }
+}
+
+
+func fetchLogin(username: String, password: String) async throws -> UsuarioLogin {
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/auth/login") else {
+        throw URLError(.badURL)
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+    let body: [String: String] = ["username": username, "password": password]
+    request.httpBody = try JSONEncoder().encode(body)
+
+    let (data, response) = try await URLSession.shared.data(for: request)
+    guard response is HTTPURLResponse else { throw URLError(.badServerResponse) }
+
+    return try JSONDecoder().decode(UsuarioLogin.self, from: data)
 }

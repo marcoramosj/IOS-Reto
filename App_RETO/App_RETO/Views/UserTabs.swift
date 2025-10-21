@@ -52,7 +52,6 @@ struct UserTabs: View {
             .tabItem { Label("Ver Turno", systemImage: "list.bullet.rectangle") }
             .tag(TabID.ver)
             
-            // MARK: - Más
             NavigationStack(path: $router.pathMore) {
                 MoreView(usuario: $usuario, idusuario: $idusuario)
             }
@@ -82,7 +81,6 @@ struct UserTabs: View {
         }
     }
     
-    // MARK: - Función de actualización de turnos
     func actualizarTurnos() async {
         await Task.detached(priority: .high) {
             do {
@@ -107,7 +105,6 @@ struct UserTabs: View {
 }
 
 
-// MARK: - Vista “Más”
 struct MoreView: View {
     @Binding var usuario: String
     @Binding var idusuario: Int

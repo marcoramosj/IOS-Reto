@@ -17,7 +17,7 @@ struct UserMap: View {
     @State private var locations: [LocationsList] = []
     
     private let destinoNombre = "Hospital Clínica Nova"
-//    private let destinoCoordenadas = CLLocationCoordinate2D(latitude: 25.7320776, longitude: -100.3001734)
+
     
     @State private var camera = MapCameraPosition.region(
         MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 25.6866, longitude: -100.3161),
@@ -56,7 +56,6 @@ struct UserMap: View {
                     .mapStyle(.standard)
                     .ignoresSafeArea()
                 } else {
-                    // Placeholder to keep layout stable while Map is unmounted
                     Color.clear.ignoresSafeArea()
                 }
 
@@ -97,10 +96,9 @@ struct UserMap: View {
                 }
             }
             .onChange(of: scenePhase) { phase in
-                // Unmount when leaving the foreground, remount when active again.
                 switch phase {
                 case .active:
-                    // Delay re-mount slightly to ensure prior command buffers are done.
+                    
                     DispatchQueue.main.async {
                         showMap = true
                     }
