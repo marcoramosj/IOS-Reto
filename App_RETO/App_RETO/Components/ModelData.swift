@@ -489,10 +489,13 @@ func postHistorialContacto(_ request: HistorialContactoRequest) async throws -> 
 struct UsuarioLogin: Codable {
     let message: String
     let username: String?
+    let emp_id: Int?
 
     enum CodingKeys: String, CodingKey {
         case message
         case username
+        case emp_id
+
     }
 }
 

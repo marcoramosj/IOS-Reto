@@ -13,7 +13,6 @@ struct InicioSesion: View {
     @Binding var idusuario: Int
     @State private var contrasena = ""
     @State private var showAlert = false
-    @State private var idDeUsuario = 0
     @EnvironmentObject var router: Router
     
     
@@ -42,8 +41,9 @@ struct InicioSesion: View {
                             
                             if result.message.lowercased() == "true" {
                                 loggedIn = true
-                            
-                                print("Login correcto para \(result.username ?? "")")
+                                idusuario = result.emp_id ?? 0
+
+                                print("Login correcto para \(result.username ?? "") con id \(idusuario)")
                             } else {
                                 showAlert = true
                             }
@@ -52,7 +52,6 @@ struct InicioSesion: View {
                             print("Error en login:", error.localizedDescription)
                         }
                     }
-
                 }
                 .padding()
             }

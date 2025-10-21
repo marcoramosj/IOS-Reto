@@ -127,3 +127,5 @@ struct MoreView: View {
         .navigationTitle("Más opciones")
     }
 }
+
+
