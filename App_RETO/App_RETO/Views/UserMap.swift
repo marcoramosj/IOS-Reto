@@ -63,7 +63,7 @@ struct UserMap: View {
                     Button {
                         showingDestinationList = true
                     } label: {
-                        Label("Choose in Apple Maps", systemImage: "map.circle.fill")
+                        Label("Abrir Apple Maps", systemImage: "map.circle.fill")
                             .font(.headline)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 10)
@@ -85,8 +85,6 @@ struct UserMap: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
             }
-            .navigationTitle("Map")
-            .navigationBarTitleDisplayMode(.inline)
             .task {
                 do {
                     locations = try await fetchLocationsList()
