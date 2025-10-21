@@ -307,38 +307,101 @@ func fetchLocationsList() async throws -> [LocationsList] {
     let decoder = JSONDecoder()
     return try decoder.decode([LocationsList].self, from: data)
 }
-struct HistorialUs: Codable, Identifiable {
-    let id = UUID()
-    let clientehistorialID: String
-    let recetahistorialID: String
-    let horadeFin: Date
 
+struct HistorialUs: Codable, Identifiable {
+    
+    // Propiedades en Swift (camelCase)
+    let id: Int
+    let scheduledDate: Date
+    let perscriptionId: String
+    let comentariosReceta: String?
+    let status: Bool
+    let comentariosCancelacion: String?
+    
+    // Mapeo de las claves JSON (de tu API) a las propiedades de Swift
     enum CodingKeys: String, CodingKey {
-        case clientehistorialID = "PacienteName"
-        case recetahistorialID = "Perscription_Id"
-        case horadeFin = "End_Time"
+        case id = "Id"
+        case scheduledDate = "Scheduled_Date"
+        case perscriptionId = "Perscription_Id"
+        case comentariosReceta = "Comentarios_Receta"
+        case status = "Status"
+        case comentariosCancelacion = "Comentarios_Cancelacion"
+
     }
 }
 
-func fetchHistorialUsuario(fecha: Date, usuarioId: Int) async throws -> [HistorialUs] {
-    let urlDateFormatter = DateFormatter()
-    urlDateFormatter.dateFormat = "yyyy-MM-dd"
-    let fechaString = urlDateFormatter.string(from: fecha)
-
-    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/usuario/\(usuarioId)/history?fecha=\(fechaString)") else {
+func fetchHistorialUsuario(usuarioId: Int) async throws -> [HistorialUs] {
+    
+    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/api/historial/usuario/\(usuarioId)") else {
         throw URLError(.badURL)
     }
 
-    let (data, _) = try await URLSession.shared.data(from: url)
 
+    let (data, response) = try await URLSession.shared.data(from: url)
+
+   
+    // Verifica código de estado
+    guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+        throw URLError(.badServerResponse)
+    }
+
+    // Verifica si la respuesta parece HTML (error del servidor)
+    if let text = String(data: data, encoding: .utf8), text.lowercased().contains("<html") {
+        throw URLError(.cannotParseResponse)
+    }
+
+    // --- Configuración del decodificador JSON ---
     let decoder = JSONDecoder()
+
+    // Intenta decodificar diferentes formatos de fecha
     let apiDateFormatter = DateFormatter()
     apiDateFormatter.locale = Locale(identifier: "en_US_POSIX")
     apiDateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
-    decoder.dateDecodingStrategy = .formatted(apiDateFormatter)
+    
+    decoder.dateDecodingStrategy = .custom { decoder in
+        let container = try decoder.singleValueContainer()
+        let dateString = try container.decode(String.self)
+        
+        // Intenta varios formatos
+        let formatters = [
+            apiDateFormatter,
+            {
+                let f = DateFormatter()
+                f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+                f.locale = Locale(identifier: "en_US_POSIX")
+                return f
+            }(),
+            {
+                let f = ISO8601DateFormatter()
+                return f
+            }()
+        ]
+        
+        for formatter in formatters {
+            if let date = (formatter as? DateFormatter)?.date(from: dateString) {
+                return date
+            } else if let iso = formatter as? ISO8601DateFormatter, let date = iso.date(from: dateString) {
+                return date
+            }
+        }
+        
+        throw DecodingError.dataCorruptedError(in: container, debugDescription: "Formato de fecha no reconocido")
+    }
 
-    return try decoder.decode([HistorialUs].self, from: data)
+    // --- Decodificación segura ---
+    do {
+        if let decodedArray = try? decoder.decode([HistorialUs].self, from: data) {
+            return decodedArray
+        } else if let single = try? decoder.decode(HistorialUs.self, from: data) {
+            return [single]
+        } else {
+            throw URLError(.cannotParseResponse)
+        }
+    } catch {
+        throw error
+    }
 }
+
 
 
 //>>>>>>> Stashed changes

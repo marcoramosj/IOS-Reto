@@ -331,5 +331,22 @@ func fechaCompletaConHoraSeleccionada(_ horaSeleccionada: Date) -> String {
     return formatter.string(from: fechaFinal)
 }
 
+struct FloatingCircleButton: View {
+    let systemName: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 56, height: 56)
+                .background(Color.marca)
+                .clipShape(Circle())
+                .shadow(color: .black.opacity(0.2), radius: 6, x: 0, y: 3)
+        }
+    }
+}
+
 
 

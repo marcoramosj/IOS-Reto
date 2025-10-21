@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum TabID: Hashable { case dashboard, turno, ver, hora, inicio, Map, Call, Cita }
+enum TabID: Hashable { case dashboard, turno, ver, hora, inicio, Map, Call, Cita, more }
 
 final class Router: ObservableObject {
     @Published var selected: TabID = .dashboard
@@ -19,10 +19,8 @@ final class Router: ObservableObject {
     @Published var pathMap = NavigationPath()
     @Published var pathCall = NavigationPath()
     @Published var pathCita = NavigationPath()
+    @Published var pathMore = NavigationPath()
     @Published var necesitaActualizarTurnos: Bool = false
-
-
-    
 
     func popToRoot(_ tab: TabID) {
         switch tab {
@@ -30,11 +28,11 @@ final class Router: ObservableObject {
         case .turno:     pathTurno = NavigationPath()
         case .ver:       pathVer = NavigationPath()
         case .hora:      pathHora = NavigationPath()
-        case .inicio:      pathInicio = NavigationPath()
-        case .Map:      pathMap = NavigationPath()
+        case .inicio:    pathInicio = NavigationPath()
+        case .Map:       pathMap = NavigationPath()
         case .Call:      pathCall = NavigationPath()
         case .Cita:      pathCita = NavigationPath()
-
+        case .more:      pathMore = NavigationPath() 
         }
     }
 }

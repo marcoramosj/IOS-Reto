@@ -4,7 +4,6 @@
 //
 //  Created by Alumno on 29/08/25.
 //
-// UserTabs.swift
 
 import SwiftUI
 
@@ -17,51 +16,48 @@ struct UserTabs: View {
     @State private var turnoId: Int? = nil
     @State private var errorMessage: String? = nil
     @State private var isLoadingTurnos = false
-    
-    
+
     var body: some View {
         TabView(selection: $router.selected) {
+            
+            // MARK: - Dashboard
             NavigationStack(path: $router.pathDashboard) {
-                DashboardUserView(usuario: $usuario, loggedIn: $loggedIn, idusuario: $idusuario, TurnoId: $turnoId, turnos: $turnos)
+                DashboardUserView(
+                    usuario: $usuario,
+                    loggedIn: $loggedIn,
+                    idusuario: $idusuario,
+                    TurnoId: $turnoId,
+                    turnos: $turnos
+                )
             }
             .tabItem { Label("Dashboard", systemImage: "house.fill") }
             .tag(TabID.dashboard)
             
+            // MARK: - Turno
             NavigationStack(path: $router.pathTurno) {
                 TurnoView(usuario: $usuario, loggedIn: $loggedIn, idusuario: $idusuario)
             }
             .tabItem { Label("Turno", systemImage: "calendar.badge.plus") }
             .tag(TabID.turno)
             
+            // MARK: - Ver Turno
             NavigationStack(path: $router.pathVer) {
-                VerTurnoView(usuario: $usuario, loggedIn: $loggedIn, TurnoId: $turnoId, turnos: $turnos)
+                VerTurnoView(
+                    usuario: $usuario,
+                    loggedIn: $loggedIn,
+                    TurnoId: $turnoId,
+                    turnos: $turnos
+                )
             }
             .tabItem { Label("Ver Turno", systemImage: "list.bullet.rectangle") }
             .tag(TabID.ver)
             
-            NavigationStack(path: $router.pathHora) {
-                HoraPicoView()
+            // MARK: - Más
+            NavigationStack(path: $router.pathMore) {
+                MoreView(usuario: $usuario, idusuario: $idusuario)
             }
-            .tabItem { Label("Hora Pico", systemImage: "clock.arrow.trianglehead.2.counterclockwise.rotate.90") }
-            .tag(TabID.hora)
-            
-            NavigationStack(path: $router.pathMap) {
-                UserMap()
-            }
-            .tabItem { Label("Mapa", systemImage: "map.circle.fill") }
-            .tag(TabID.Map)
-            
-            NavigationStack(path: $router.pathCall) {
-                UserCallView(idusuario: $idusuario)
-            }
-            .tabItem { Label("Llamada", systemImage: "phone") }
-            .tag(TabID.Call)
-            
-            NavigationStack(path: $router.pathCita) {
-                AppointmentHistoryView()
-            }
-            .tabItem { Label("Historial", systemImage: "document.on.clipboard") }
-            .tag(TabID.Cita)
+            .tabItem { Label("Más", systemImage: "ellipsis.circle") }
+            .tag(TabID.more)
         }
         .tint(Color.marca)
         .onAppear {
@@ -86,16 +82,12 @@ struct UserTabs: View {
         }
     }
     
-    
+    // MARK: - Función de actualización de turnos
     func actualizarTurnos() async {
-        // 🔹 Ejecuta la tarea con prioridad alta y fuera del actor principal
         await Task.detached(priority: .high) {
             do {
                 let nuevosTurnos = try await fetchUserTurns(userId: idusuario)
-
-                // 🔹 Vuelve al MainActor solo para actualizar el estado
                 await MainActor.run {
-                    // ✅ Solo actualiza si realmente hay cambios
                     if nuevosTurnos != turnos {
                         turnos = nuevosTurnos
                         turnoId = nuevosTurnos.first?.IDTurno
@@ -104,13 +96,37 @@ struct UserTabs: View {
                         print("ℹ️ No hubo cambios en los turnos, se mantiene el estado actual")
                     }
                 }
-
             } catch {
                 await MainActor.run {
                     errorMessage = "No se pudieron obtener los turnos."
                     print("⚠️ Error al actualizar turnos: \(error)")
                 }
             }
-        }.value // <- importante: espera el resultado de la tarea detachada
+        }.value
+    }
+}
+
+
+// MARK: - Vista “Más”
+struct MoreView: View {
+    @Binding var usuario: String
+    @Binding var idusuario: Int
+
+    var body: some View {
+        List {
+            NavigationLink(destination: HoraPicoView()) {
+                Label("Hora Pico", systemImage: "clock.arrow.trianglehead.2.counterclockwise.rotate.90")
+            }
+            NavigationLink(destination: UserMap()) {
+                Label("Mapa", systemImage: "map.circle.fill")
+            }
+            NavigationLink(destination: UserCallView(idusuario: $idusuario)) {
+                Label("Llamada", systemImage: "phone")
+            }
+            NavigationLink(destination: AppointmentHistoryView(idusuario: $idusuario, usuario: $usuario)) {
+                Label("Historial de Citas", systemImage: "document.on.clipboard")
+            }
+        }
+        .navigationTitle("Más opciones")
     }
 }
