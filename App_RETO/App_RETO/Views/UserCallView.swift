@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  PruebLlamar
+//  
 //
 //  Created by 박진혁 on 15/10/25.
 //
@@ -131,12 +131,16 @@ struct UserCallView: View {
         }
     }
 
-    // MARK: UI Row
     @ViewBuilder
     private func historyRow(_ a: Activity) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(a.contactoNombreCompleto).font(.headline)
-            Text(a.fechaContacto).font(.subheadline).foregroundColor(.secondary)
+
+            // ⬅️ Use the helper here
+            Text(CoolDate(from: a.fechaContacto))
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
             HStack(spacing: 8) {
                 Text(a.tipoContacto).font(.caption)
                 if !a.numeroLlamado.isEmpty {
@@ -147,16 +151,12 @@ struct UserCallView: View {
         .padding(.vertical, 4)
     }
 
-    // MARK: Data Loading
 
-    /// 🔁 Picker now loads ONLY from GET /api/contactos
+
     private func loadDestinos() async {
         await MainActor.run { loadingDestinos = true; destinosError = nil }
         do {
-            // Always fetch /api/contactos for the picker
             listaContactos = try await fetchListaContactos()
-
-            // Map -> DialDestination, skip contacts without phone
             var items: [DialDestination] = listaContactos.compactMap { c in
                 let phone = c.telefono.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !phone.isEmpty else { return nil }
@@ -164,11 +164,9 @@ struct UserCallView: View {
                 return DialDestination(id: c.id, name: full, number: phone)
             }
 
-            // De-duplicate by phone (keep first)
             var seen = Set<String>()
             items = items.filter { seen.insert($0.number).inserted }
 
-            // Sort alphabetically
             items.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 
             await MainActor.run {
@@ -203,14 +201,11 @@ struct UserCallView: View {
         }
     }
 
-    // MARK: Actions
-
     private func callTapped() {
         guard let idx = selectedIndex, destinos.indices.contains(idx) else { return }
         let d = destinos[idx]
         pendingDestino = d
 
-        // tel:// won't open on Simulator
         if let url = URL(string: "tel://\(d.number)") {
             UIApplication.shared.open(url)
         }
@@ -230,7 +225,6 @@ struct UserCallView: View {
         }
     }
 
-    // MARK: Helpers
 
     private func displayName(for c: ListaContactos) -> String {
         [c.name, c.middleName, c.lastName, c.lastName1]
@@ -240,4 +234,33 @@ struct UserCallView: View {
     }
 }
 
-#Preview { UserCallView(idusuario: .constant(8)) }
+private let isoParser: ISO8601DateFormatter = {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return f
+}()
+
+private let niceFormatter: DateFormatter = {
+    let f = DateFormatter()
+    f.dateStyle = .medium
+    f.timeStyle = .short
+    f.locale = .current
+    f.timeZone = .current
+    return f
+}()
+
+private func CoolDate(from iso: String) -> String {
+    // Parse with ISO8601DateFormatter
+    if let d = isoParser.date(from: iso) {
+        return niceFormatter.string(from: d)
+    }
+    // Fallback: manually trim microseconds and replace T with space
+    let trimmed = iso
+        .replacingOccurrences(of: "\\.\\d+", with: "", options: .regularExpression)
+        .replacingOccurrences(of: "T", with: " ")
+    return trimmed
+}
+
+#Preview {
+    UserCallView(idusuario: .constant(8))
+}
