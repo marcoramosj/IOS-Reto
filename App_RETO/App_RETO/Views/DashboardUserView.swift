@@ -13,7 +13,6 @@ struct DashboardUserView: View {
     @Binding var turnos: [Turn]
 
     @State private var activeAlert: ActiveAlert?
-    
     @State private var turno: UsuarioTurnosAdelante? = nil
     @State private var errorMessage: String? = nil
     @State private var successMessage: String? = nil
@@ -55,24 +54,22 @@ struct DashboardUserView: View {
                     .shadow(color: .black.opacity(0.15), radius: 16, x: 0, y: 8)
 
                     VStack(spacing: 18) {
+                        // Pedir Turno
                         BotonPrincipal(title: "Pedir Turno") {
                             router.selected = .turno
                             router.popToRoot(.turno)
                         }
                         .disabled(TurnoId != nil)
 
-                        BotonPrincipal(title: "Ver Hora Pico") {
-                            router.selected = .hora
-                            router.popToRoot(.hora)
-                        }
-
-                        Button(action:{
+                        // Cancelar Turno
+                        Button(action: {
                             if TurnoId == nil {
-                            errorMessage = "No tienes un turno activo para cancelar."
-                            activeAlert = .mensaje
-                        } else {
-                            activeAlert = .cancelar
-                        } }) {
+                                errorMessage = "No tienes un turno activo para cancelar."
+                                activeAlert = .mensaje
+                            } else {
+                                activeAlert = .cancelar
+                            }
+                        }) {
                             Text("Cancelar Turno")
                                 .font(.system(size: 24, weight: .bold))
                                 .frame(maxWidth: .infinity, minHeight: 40)
@@ -81,7 +78,7 @@ struct DashboardUserView: View {
                         .tint(Color.marca)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                        // Botón de cerrar sesión
+                        // Cerrar sesión
                         HStack {
                             Spacer()
                             Button(action: { activeAlert = .salir }) {
@@ -111,9 +108,7 @@ struct DashboardUserView: View {
                     title: Text("¿Quieres cancelar tu turno?"),
                     message: Text("¿Por que desea cancelar?"),
                     primaryButton: .destructive(Text("Continuar")) {
-                        Task {
-                            showCancelarDialog = true
-                        }
+                        Task { showCancelarDialog = true }
                     },
                     secondaryButton: .cancel()
                 )
@@ -147,16 +142,14 @@ struct DashboardUserView: View {
                             titleVisibility: .visible) {
             if let cancelid = TurnoId {
                 Button("Ya no necesito el medicamento") {
-                    print("Intentando cancelar \(cancelid)")
-
                     Task {
                         do {
                             let response = try await cancelTurno(turnoescogido: cancelid, comentario: "Ya no necesito el medicamento")
                             print("✅ \(response.formatted)")
                             await MainActor.run {
-                                            router.necesitaActualizarTurnos = true
-                                            TurnoId = nil
-                                        }
+                                router.necesitaActualizarTurnos = true
+                                TurnoId = nil
+                            }
                         } catch {
                             print("❌ Error al cancelar: \(error)")
                         }
@@ -168,9 +161,9 @@ struct DashboardUserView: View {
                             let response = try await cancelTurno(turnoescogido: cancelid, comentario: "Error al agendar el turno")
                             print("✅ \(response.formatted)")
                             await MainActor.run {
-                                            router.necesitaActualizarTurnos = true
-                                            TurnoId = nil
-                                        }
+                                router.necesitaActualizarTurnos = true
+                                TurnoId = nil
+                            }
                         } catch {
                             print("❌ Error al cancelar: \(error)")
                         }
@@ -182,9 +175,9 @@ struct DashboardUserView: View {
                             let response = try await cancelTurno(turnoescogido: cancelid, comentario: "Motivos personales")
                             print("✅ \(response.formatted)")
                             await MainActor.run {
-                                            router.necesitaActualizarTurnos = true
-                                            TurnoId = nil
-                                        }
+                                router.necesitaActualizarTurnos = true
+                                TurnoId = nil
+                            }
                         } catch {
                             print("❌ Error al cancelar: \(error)")
                         }
@@ -196,15 +189,14 @@ struct DashboardUserView: View {
                             let response = try await cancelTurno(turnoescogido: cancelid, comentario: "Otro")
                             print("✅ \(response.formatted)")
                             await MainActor.run {
-                                            router.necesitaActualizarTurnos = true
-                                            TurnoId = nil
-                                        }
+                                router.necesitaActualizarTurnos = true
+                                TurnoId = nil
+                            }
                         } catch {
                             print("❌ Error al cancelar: \(error)")
                         }
                     }
                 }
-                
             } else {
                 Button("No hay turno activo", role: .cancel) { }
             }
@@ -213,6 +205,7 @@ struct DashboardUserView: View {
         }
     }
 }
+
 #Preview {
     DashboardUserView(
         usuario: .constant("marcoramos"),
@@ -220,9 +213,10 @@ struct DashboardUserView: View {
         idusuario: .constant(8),
         TurnoId: .constant(12),
         turnos: .constant([
-                    Turn(IDTurno: 12, VentanillaId: 01),
-                    Turn(IDTurno: 13, VentanillaId: 02),
-                    Turn(IDTurno: 14,VentanillaId: 03)])
+            Turn(IDTurno: 12, VentanillaId: 01),
+            Turn(IDTurno: 13, VentanillaId: 02),
+            Turn(IDTurno: 14, VentanillaId: 03)
+        ])
     )
     .environmentObject(Router())
 }
