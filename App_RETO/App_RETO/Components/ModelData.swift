@@ -523,53 +523,85 @@ func fetchLogin(username: String, password: String) async throws -> UsuarioLogin
 }
 
 
-struct StartServiceResponse: Codable {
-    let message: String
-    let turno_id: Int?
-    let ventanilla_id: Int?
-    let emp_id: Int?
 
-    enum CodingKeys: String, CodingKey {
-        case message
-        case turno_id
-        case ventanilla_id
-        case emp_id
-    }
+
+
+
+/// Respuesta documentada por Swagger para POST /service/start
+/// Ejemplo:
+/// { "queue_id": 1, "message": "...", "turn_id": 146, "ventanilla_id": 1 }
+struct StartServiceResponse: Decodable {
+    let queue_id: Int?
+    let message: String?
+    let turn_id: Int?
+    let ventanilla_id: Int?   // opcional: el backend a veces no lo envía
 }
 
+@MainActor
+final class TurnoService: ObservableObject {
+    @Published var ventanillaAsignada: Int? = nil
+    @Published var lastTurnId: Int? = nil
+    @Published var cargando = false
+    @Published var error: String? = nil
+    @Published var mensaje: String? = nil
 
+    /// Llama a POST /service/start con { "ventanilla_id": <Int> }
+    func startService(ventanillaId: Int) async {
+        cargando = true
+        error = nil
+        mensaje = nil
 
-func startService(ventanillaId: Int) async throws -> StartServiceResponse {
-    guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/service/start") else {
-        throw URLError(.badURL)
-    }
+        guard let url = URL(string: "https://los-cinco-informaticos.tc2007b.tec.mx:10206/service/start") else {
+            cargando = false
+            error = "URL inválida."
+            return
+        }
 
-    var request = URLRequest(url: url)
-    request.httpMethod = "POST"
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.setValue("application/json", forHTTPHeaderField: "Accept")
+        var req = URLRequest(
+            url: url,
+            cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
+            timeoutInterval: 20
+        )
+        req.httpMethod = "POST"
+        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        // Si necesitas auth: req.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        req.httpBody = try? JSONSerialization.data(withJSONObject: ["ventanilla_id": ventanillaId])
 
-    // Cuerpo JSON
-    let body: [String: Int] = ["ventanilla_id": ventanillaId]
-    request.httpBody = try JSONEncoder().encode(body)
+        do {
+            let (data, resp) = try await URLSession.shared.data(for: req)
+            guard let http = resp as? HTTPURLResponse else { throw URLError(.badServerResponse) }
+            guard (200..<300).contains(http.statusCode) else {
+                let raw = String(data: data, encoding: .utf8) ?? ""
+                throw NSError(domain: "ServiceStart", code: http.statusCode,
+                              userInfo: [NSLocalizedDescriptionKey: "HTTP \(http.statusCode). Body: \(raw)"])
+            }
 
-    // Llamada a la API
-    let (data, response) = try await URLSession.shared.data(for: request)
+            guard !data.isEmpty else {
+                cargando = false
+                mensaje = "Sin contenido del servidor."
+                ventanillaAsignada = nil
+                return
+            }
 
-    guard let httpResponse = response as? HTTPURLResponse else {
-        throw URLError(.badServerResponse)
-    }
+            if let decoded = try? JSONDecoder().decode(StartServiceResponse.self, from: data) {
+                ventanillaAsignada = decoded.ventanilla_id
+                lastTurnId = decoded.turn_id
+                mensaje = decoded.message
+                cargando = false
 
-    guard (200...299).contains(httpResponse.statusCode) else {
-        // Intenta decodificar un mensaje de error del servidor
-        if let apiError = try? JSONDecoder().decode([String: String].self, from: data),
-           let message = apiError["error"] ?? apiError["message"] {
-            throw NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: message])
-        } else {
-            throw URLError(.cannotParseResponse)
+                if decoded.ventanilla_id == nil, decoded.message == nil {
+                    let raw = String(data: data, encoding: .utf8) ?? "\(data.count) bytes"
+                    mensaje = "Respuesta sin 'ventanilla_id'. \(raw)"
+                }
+                return
+            }
+
+            let raw = String(data: data, encoding: .utf8) ?? "\(data.count) bytes"
+            cargando = false
+            error = "Formato inesperado: \(raw)"
+        } catch {
+            cargando = false
+            self.error = error.localizedDescription
         }
     }
-
-    // Decodificar respuesta válida
-    return try JSONDecoder().decode(StartServiceResponse.self, from: data)
 }
