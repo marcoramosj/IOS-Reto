@@ -15,6 +15,7 @@ struct TurnoView: View {
     @State private var hora = Date()
     @State private var numeroReceta = ""
     @State private var comentario = ""
+    @State private var idTurno: Int?
     
     @State private var mostrarDatePicker = false
     @EnvironmentObject var router: Router
@@ -100,6 +101,7 @@ struct TurnoView: View {
                                     comentariosReceta: comentario,
                                     usrId: idusuario
                                 )
+                                
                                 alertMessage = "Turno creado con ID \(response.newTurnoId)"
                             }
                             router.selected = .dashboard

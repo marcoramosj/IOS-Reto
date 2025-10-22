@@ -1,4 +1,3 @@
-// ======================== SWIFTUI VIEW ========================
 import SwiftUI
 
 struct VerTurnoView: View {
@@ -6,11 +5,14 @@ struct VerTurnoView: View {
     @Binding var loggedIn: Bool
     @Binding var TurnoId: Int?
 
-    @StateObject private var service = TurnoService()
-    @EnvironmentObject var router: Router
+    // Datos que vienen del padre (UserTabs)
+    let ventanillaAsignada: Int?
+    let cargando: Bool
+    let mensaje: String?
+    let error: String?
 
-    // Decide cuál ventanilla usar (cámbialo o pásalo por @Binding)
-    @State private var ventanillaAUsar: Int = 1
+    // Acción para volver a intentar (el padre hace el fetch)
+    let onRetry: () -> Void
 
     var body: some View {
         VStack(spacing: 24) {
@@ -23,31 +25,57 @@ struct VerTurnoView: View {
                         .padding(.top, 80)
 
                     Text("Tu turno:")
-                        .font(.title).fontWeight(.bold).foregroundStyle(.gray)
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.gray)
 
                     Text(TurnoId.map { "\($0)" } ?? "-")
                         .font(.system(size: 72, weight: .heavy, design: .rounded))
-                        .monospacedDigit().foregroundStyle(.orange)
+                        .monospacedDigit()
+                        .foregroundStyle(.orange)
 
                     Text("Ventanilla:")
-                        .font(.title).fontWeight(.bold).foregroundStyle(.gray)
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.gray)
 
                     Group {
-                        if service.cargando {
-                            ProgressView("Iniciando servicio…").padding()
-                        } else if let vent = service.ventanillaAsignada {
+                        if cargando {
+                            ProgressView("Iniciando servicio...")
+                                .padding()
+                        } else if let vent = ventanillaAsignada {
                             Text("\(vent)")
                                 .font(.system(size: 64, weight: .heavy, design: .rounded))
-                                .monospacedDigit().foregroundStyle(.orange)
-                        } else if let error = service.error {
+                                .monospacedDigit()
+                                .foregroundStyle(.orange)
+                        } else if let msg = mensaje {
+                            VStack(spacing: 8) {
+                                Text("—")
+                                    .font(.system(size: 64, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(.gray)
+                                Text(msg)
+                                    .font(.footnote)
+                                    .multilineTextAlignment(.center)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.horizontal, 24)
+                            }
+                        } else if let err = error {
                             VStack(spacing: 10) {
-                                Text("—").font(.system(size: 64, weight: .heavy, design: .rounded)).foregroundStyle(.gray)
-                                Text(error).font(.footnote).foregroundStyle(.red)
-                                Button("Reintentar") { Task { await service.startService(ventanillaId: ventanillaAUsar) } }
+                                Text("—")
+                                    .font(.system(size: 64, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(.gray)
+                                Text(err)
+                                    .font(.footnote)
+                                    .foregroundStyle(.red)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 24)
+                                Button("Reintentar") { onRetry() }
                                     .buttonStyle(.borderedProminent)
                             }
                         } else {
-                            Text("-").font(.system(size: 64, weight: .heavy, design: .rounded)).foregroundStyle(.gray)
+                            Text("—")
+                                .font(.system(size: 64, weight: .heavy, design: .rounded))
+                                .foregroundStyle(.gray)
                         }
                     }
                 }
@@ -57,12 +85,6 @@ struct VerTurnoView: View {
         .background(Color.white)
         .navigationTitle("Ver turno")
         .navigationBarTitleDisplayMode(.inline)
-        .task {
-            // dispara al entrar
-            await service.startService(ventanillaId: ventanillaAUsar)
-            // si el backend devuelve turn_id, refléjalo en tu binding
-            if let t = service.lastTurnId { TurnoId = t }
-        }
     }
 }
 
@@ -70,7 +92,11 @@ struct VerTurnoView: View {
     VerTurnoView(
         usuario: .constant("Mario"),
         loggedIn: .constant(true),
-        TurnoId: .constant(327)
+        TurnoId: .constant(329),
+        ventanillaAsignada: 1,
+        cargando: false,
+        mensaje: nil,
+        error: nil,
+        onRetry: {}
     )
-    .environmentObject(Router())
 }

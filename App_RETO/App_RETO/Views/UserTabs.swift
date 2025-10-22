@@ -12,10 +12,12 @@ struct UserTabs: View {
     @Binding var usuario: String
     @Binding var loggedIn: Bool
     @Binding var idusuario: Int
+    @State private var turnoId: Int? = nil           // ← se actualizará con lastTurnId del servicio
+    @State private var ventanillaId: Int?        // ← ventanilla elegida en esta sesión
     @State private var turnos: [Turn] = []
-    @State private var turnoId: Int? = nil
     @State private var errorMessage: String? = nil
     @State private var isLoadingTurnos = false
+    @StateObject private var turnoService = TurnoService()
 
     var body: some View {
         TabView(selection: $router.selected) {
@@ -45,7 +47,12 @@ struct UserTabs: View {
                 VerTurnoView(
                     usuario: $usuario,
                     loggedIn: $loggedIn,
-                    TurnoId: $turnoId
+                    TurnoId: $turnoId,
+                    ventanillaAsignada: turnoService.ventanillaAsignada,
+                    cargando: turnoService.cargando,
+                    mensaje: turnoService.mensaje,
+                    error: turnoService.error,
+                    onRetry: { Task { await fetchStart() } }
                 )
             }
             .tabItem { Label("Ver Turno", systemImage: "list.bullet.rectangle") }
@@ -101,6 +108,12 @@ struct UserTabs: View {
             }
         }.value
     }
+    private func fetchStart() async {
+        await turnoService.startService(ventanillaId: ventanillaId ?? 1)
+            if let t = turnoService.lastTurnId {
+                turnoId = t       // propaga a todo el árbol (Dashboard/Turno/VerTurno)
+            }
+        }
 }
 
 
